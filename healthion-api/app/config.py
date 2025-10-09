@@ -1,8 +1,16 @@
 from functools import lru_cache
 from pathlib import Path
+from enum import Enum
 
-from pydantic import SecretStr
+from pydantic import AnyHttpUrl, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class EnvironmentType(str, Enum):
+    LOCAL = "local"
+    TEST = "test"
+    STAGING = "staging"
+    PRODUCTION = "production"
 
 
 class Settings(BaseSettings):
@@ -10,15 +18,21 @@ class Settings(BaseSettings):
         env_file=str(Path(__file__).parent.parent / "config" / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
-        # default env_file solution search .env every time BaseSettings is instantiated
-        # dotenv search .env when module is imported, without usecwd it starts from the file it was called
     )
 
     # API SETTINGS
-    api_name: str = f"healthion-api API"
+    api_name: str = "healthion-api API"
     api_v1: str = "/api/v1"
     api_latest: str = api_v1
+
     paging_limit: int = 100
+
+    debug: bool = False
+
+    environment: EnvironmentType = EnvironmentType.TEST
+
+    backend_cors_origins: list[AnyHttpUrl] = []
+    backend_cors_allow_all: bool = False
 
     # DATABASE SETTINGS
     db_host: str = "localhost"
@@ -26,8 +40,6 @@ class Settings(BaseSettings):
     db_name: str = "healthion-api"
     db_user: str = "user"
     db_password: SecretStr = SecretStr("password")
-
-
 
     @property
     def db_uri(self) -> str:
