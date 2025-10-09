@@ -1,7 +1,7 @@
 [project]
 name = "healthion-api"
 version = "0.1.0"
-description = ""
+description = "Healthion API"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -56,9 +56,6 @@ ignore = [
     "RET503", # implicit-return
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"app/*/routes/*/*.py" = ["ANN201"]
-# ignoring annotation of return type of FastAPI endpoints to use just reponse_model
 
 [build-system]
 requires = ["uv_build"]

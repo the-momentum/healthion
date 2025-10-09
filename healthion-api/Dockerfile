@@ -32,4 +32,5 @@ FROM python:3.13-slim
 
     EXPOSE 8000
 
-    CMD ["uv", "run", "fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
+    RUN chmod +x /root_project/prestart.sh
+    RUN chmod +x /root_project/scripts/start/app.sh
