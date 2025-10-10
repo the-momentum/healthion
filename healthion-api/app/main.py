@@ -5,12 +5,14 @@ from fastapi.exceptions import RequestValidationError
 
 from app.config import settings
 from app.utils.exceptions import handle_exception
-
+from app.api import head_router
 from app.middlewares import add_cors_middleware
 
 basicConfig(level=INFO, format="[%(asctime)s - %(name)s] (%(levelname)s) %(message)s")
 
 api = FastAPI(title=settings.api_name)
+
+api.include_router(head_router, prefix=settings.api_v1)
 
 add_cors_middleware(api)
 

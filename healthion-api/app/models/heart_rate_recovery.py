@@ -1,37 +1,25 @@
-from __future__ import annotations
+from sqlalchemy.orm import Mapped
 
-from datetime import datetime
-from decimal import Decimal
-from uuid import UUID as UUIDType
-
-from sqlalchemy import (
-    DateTime,
-    ForeignKey,
-    Numeric,
-    String,
-    Text,
+from app.database import BaseDbModel
+from app.mappings import (
+    FKWorkout,
+    ManyToOne,
+    PrimaryKey,
+    datetime_tz,
+    numeric_10_3,
+    rel_attr,
+    str_50,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from app.db.base import Base
-from app.models.workout import Workout
 
 
-class HeartRateRecovery(Base):
-    __tablename__ = "heart_rate_recovery"
+class HeartRateRecovery(BaseDbModel):
+    id: Mapped[PrimaryKey[int]]
+    workout_id: Mapped[FKWorkout]
+    date: Mapped[datetime_tz]
+    source: Mapped[str | None]
+    units: Mapped[str_50 | None]
+    avg: Mapped[numeric_10_3 | None]
+    min: Mapped[numeric_10_3 | None]
+    max: Mapped[numeric_10_3 | None]
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    workout_id: Mapped[UUIDType] = mapped_column(
-        ForeignKey("workouts.id", ondelete="CASCADE"),
-    )
-    date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    source: Mapped[str | None] = mapped_column(Text)
-    units: Mapped[str | None] = mapped_column(String(50))
-    avg: Mapped[Decimal | None] = mapped_column(Numeric(10, 3))
-    min: Mapped[Decimal | None] = mapped_column(Numeric(10, 3))
-    max: Mapped[Decimal | None] = mapped_column(Numeric(10, 3))
-
-    workout: Mapped[Workout] = relationship(
-        "Workout",
-        back_populates="heart_rate_recovery",
-    )
+    workout: Mapped[ManyToOne["Workout"]] = rel_attr("heart_rate_recovery")

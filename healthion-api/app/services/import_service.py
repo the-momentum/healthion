@@ -1,12 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List
 from uuid import UUID, uuid4
 from fastapi import Depends
 from typing import Iterable
-from sqlalchemy.orm import Session
 
-from app.api.deps import get_db
+from app.database import DbSession
 
 from app.schemas.health_data import ImportBundle, RootJSON, WorkoutJSON
 from app.schemas.health_data import HeartRateDataIn, HeartRateRecoveryIn, ActiveEnergyIn
@@ -18,7 +16,7 @@ APPLE_DT_FORMAT = "%Y-%m-%d %H:%M:%S %z"
 
 
 class ImportService:
-    def __init__(self, db: Session = Depends(get_db)):
+    def __init__(self, db: DbSession):
         self._db = db
 
     def _dt(self, s: str) -> datetime:
@@ -27,12 +25,12 @@ class ImportService:
             s = f"{s[:-2]}:{s[-2:]}"
         return datetime.fromisoformat(s)
 
-    def _dec(self, x: Optional[float | int]) -> Optional[Decimal]:
+    def _dec(self, x: float | int | None) -> Decimal | None:
         return None if x is None else Decimal(str(x))
 
     def _qty_pair(
-        self, q: Optional[QuantityJSON]
-    ) -> tuple[Optional[Decimal], Optional[str]]:
+        self, q: QuantityJSON | None
+    ) -> tuple[Decimal | None, str | None]:
         if q is None:
             return None, None
         return self._dec(q.qty), q.units
@@ -79,7 +77,7 @@ class ImportService:
                 temperature_units=temperature_units,
             )
 
-            hr_data_rows: List[HeartRateDataIn] = []
+            hr_data_rows: list[HeartRateDataIn] = []
             for e in wjson.heartRateData or []:
                 hr_data_rows.append(
                     HeartRateDataIn(
@@ -93,7 +91,7 @@ class ImportService:
                     )
                 )
 
-            hr_recovery_rows: List[HeartRateRecoveryIn] = []
+            hr_recovery_rows: list[HeartRateRecoveryIn] = []
             for e in wjson.heartRateRecovery or []:
                 hr_recovery_rows.append(
                     HeartRateRecoveryIn(
@@ -107,7 +105,7 @@ class ImportService:
                     )
                 )
 
-            ae_rows: List[ActiveEnergyIn] = []
+            ae_rows: list[ActiveEnergyIn] = []
             for e in wjson.activeEnergy or []:
                 ae_rows.append(
                     ActiveEnergyIn(
