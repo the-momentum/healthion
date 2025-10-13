@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import EmailStr
 from sqlalchemy import DateTime, ForeignKey, Numeric, String
-from sqlalchemy.orm import mapped_column, relationship
+from sqlalchemy.orm import mapped_column
 
 T = TypeVar("T")
 
@@ -35,14 +35,3 @@ numeric_15_5 = Annotated[Decimal, mapped_column(Numeric(15, 5))]
 
 # Custom foreign key
 FKWorkout = Annotated[UUID, mapped_column(ForeignKey("workout.id", ondelete="CASCADE"))]
-
-# Relationship helper functions
-def rel_attr(back_populates: str) -> relationship:
-    return relationship(back_populates=back_populates)
-
-def rel_attr_cascade(back_populates: str) -> relationship:
-    return relationship(
-        back_populates=back_populates,
-        cascade="all, delete-orphan",
-        passive_deletes=True
-    )

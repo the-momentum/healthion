@@ -9,7 +9,6 @@ from app.mappings import (
     datetime_tz,
     numeric_10_2,
     numeric_15_5,
-    rel_attr_cascade,
     str_10,
     str_100,
     str_255,
@@ -36,6 +35,6 @@ class Workout(BaseDbModel):
     temperature_qty: Mapped[numeric_10_2 | None]
     temperature_units: Mapped[str_10 | None]
 
-    heart_rate_data: Mapped[OneToMany["HeartRateData"]] = rel_attr_cascade("workout")
-    heart_rate_recovery: Mapped[OneToMany["HeartRateRecovery"]] = rel_attr_cascade("workout")
-    active_energy: Mapped[OneToMany["ActiveEnergy"]] = rel_attr_cascade("workout")
+    heart_rate_data: Mapped[OneToMany["HeartRateData"]]
+    heart_rate_recovery: Mapped[OneToMany["HeartRateRecovery"]]
+    active_energy: Mapped[OneToMany["ActiveEnergy"]]

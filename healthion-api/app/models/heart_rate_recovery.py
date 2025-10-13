@@ -7,7 +7,6 @@ from app.mappings import (
     PrimaryKey,
     datetime_tz,
     numeric_10_3,
-    rel_attr,
     str_50,
 )
 
@@ -22,4 +21,4 @@ class HeartRateRecovery(BaseDbModel):
     min: Mapped[numeric_10_3 | None]
     max: Mapped[numeric_10_3 | None]
 
-    workout: Mapped[ManyToOne["Workout"]] = rel_attr("heart_rate_recovery")
+    workout: Mapped[ManyToOne["Workout"]]

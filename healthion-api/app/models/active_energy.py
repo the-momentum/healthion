@@ -7,10 +7,8 @@ from app.mappings import (
     PrimaryKey,
     datetime_tz,
     numeric_15_5,
-    rel_attr,
     str_50,
 )
-
 
 class ActiveEnergy(BaseDbModel):
     id: Mapped[PrimaryKey[int]]
@@ -20,4 +18,4 @@ class ActiveEnergy(BaseDbModel):
     units: Mapped[str_50 | None]
     qty: Mapped[numeric_15_5 | None]
 
-    workout: Mapped[ManyToOne["Workout"]] = rel_attr("active_energy")
+    workout: Mapped[ManyToOne["Workout"]]
