@@ -1,4 +1,6 @@
-from typing import Literal, Optional
+from datetime import datetime
+from decimal import Decimal
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -7,32 +9,32 @@ from pydantic import BaseModel, Field
 class WorkoutQueryParams(BaseModel):
     """Query parameters for workout filtering and pagination."""
 
-    start_date: Optional[str] = Field(
+    start_date: str | None = Field(
         None, description="ISO 8601 format (e.g., '2023-12-01T00:00:00Z')"
     )
-    end_date: Optional[str] = Field(
+    end_date: str | None = Field(
         None, description="ISO 8601 format (e.g., '2023-12-31T23:59:59Z')"
     )
-    workout_type: Optional[str] = Field(
+    workout_type: str | None = Field(
         None, description="e.g., 'Outdoor Walk', 'Indoor Walk'"
     )
-    location: Optional[Literal["Indoor", "Outdoor"]] = Field(
+    location: Literal["Indoor", "Outdoor"] | None = Field(
         None, description="Indoor or Outdoor"
     )
-    min_duration: Optional[int] = Field(None, description="in seconds")
-    max_duration: Optional[int] = Field(None, description="in seconds")
-    min_distance: Optional[float] = Field(None, description="in km")
-    max_distance: Optional[float] = Field(None, description="in km")
-    sort_by: Optional[Literal["date", "duration", "distance", "calories"]] = Field(
+    min_duration: int | None = Field(None, description="in seconds")
+    max_duration: int | None = Field(None, description="in seconds")
+    min_distance: float | None = Field(None, description="in km")
+    max_distance: float | None = Field(None, description="in km")
+    sort_by: Literal["date", "duration", "distance", "calories"] | None = Field(
         "date", description="Sort field"
     )
-    sort_order: Optional[Literal["asc", "desc"]] = Field(
+    sort_order: Literal["asc", "desc"] | None = Field(
         "desc", description="Sort order"
     )
-    limit: Optional[int] = Field(
+    limit: int | None = Field(
         20, ge=1, le=100, description="Number of results to return"
     )
-    offset: Optional[int] = Field(0, ge=0, description="Number of results to skip")
+    offset: int | None = Field(0, ge=0, description="Number of results to skip")
 
 
 class DistanceValue(BaseModel):
@@ -91,8 +93,8 @@ class WorkoutResponse(BaseModel):
     distance: DistanceValue
     active_energy_burned: ActiveEnergyValue
     intensity: IntensityValue
-    temperature: Optional[TemperatureValue] = None
-    humidity: Optional[HumidityValue] = None
+    temperature: TemperatureValue | None = None
+    humidity: HumidityValue | None = None
     source: str
     summary: WorkoutSummary
 
@@ -119,3 +121,45 @@ class WorkoutListResponse(BaseModel):
 
     data: list[WorkoutResponse]
     meta: WorkoutMeta
+
+
+# CRUD Schemas
+class WorkoutCreate(BaseModel):
+    """Schema for creating a workout."""
+    
+    id: UUID
+    name: str | None = None
+    location: str | None = None
+    start: datetime
+    end: datetime
+    duration: Decimal | None = None
+    active_energy_burned_qty: Decimal | None = None
+    active_energy_burned_units: str | None = None
+    distance_qty: Decimal | None = None
+    distance_units: str | None = None
+    intensity_qty: Decimal | None = None
+    intensity_units: str | None = None
+    humidity_qty: Decimal | None = None
+    humidity_units: str | None = None
+    temperature_qty: Decimal | None = None
+    temperature_units: str | None = None
+
+
+class WorkoutUpdate(BaseModel):
+    """Schema for updating a workout."""
+    
+    name: str | None = None
+    location: str | None = None
+    start: datetime | None = None
+    end: datetime | None = None
+    duration: Decimal | None = None
+    active_energy_burned_qty: Decimal | None = None
+    active_energy_burned_units: str | None = None
+    distance_qty: Decimal | None = None
+    distance_units: str | None = None
+    intensity_qty: Decimal | None = None
+    intensity_units: str | None = None
+    humidity_qty: Decimal | None = None
+    humidity_units: str | None = None
+    temperature_qty: Decimal | None = None
+    temperature_units: str | None = None
