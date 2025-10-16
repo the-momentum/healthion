@@ -1,14 +1,10 @@
 from fastapi import APIRouter
 
-from app.api.routes.v1.heart_rate import router as heart_rate_router_v1
-from app.api.routes.v1.workouts import router as workouts_router_v1
-from app.api.routes.v1.import_data import router as import_data_router_v1
-
+from app.api.routes.v1 import v1_router
+from app.config import settings
 
 head_router = APIRouter()
-head_router.include_router(heart_rate_router_v1, prefix="", tags=["heart_rate"])
-head_router.include_router(workouts_router_v1, prefix="", tags=["workouts"])
-head_router.include_router(import_data_router_v1, prefix="/import_data", tags=["import_data"])
+head_router.include_router(v1_router, prefix=settings.api_v1)
 
 __all__ = [
     "head_router",

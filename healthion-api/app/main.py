@@ -12,7 +12,7 @@ basicConfig(level=INFO, format="[%(asctime)s - %(name)s] (%(levelname)s) %(messa
 
 api = FastAPI(title=settings.api_name)
 
-api.include_router(head_router, prefix=settings.api_v1)
+api.include_router(head_router)
 
 add_cors_middleware(api)
 
@@ -26,5 +26,5 @@ async def root() -> dict[str, str]:
 async def request_validation_exception_handler(
     _: Request, exc: RequestValidationError
 ) -> None:
-    raise handle_exception(exc, err_msg=exc.args[0][0]["msg"])
+    raise handle_exception(exc, "request_validation")
 

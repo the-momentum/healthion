@@ -33,5 +33,6 @@ numeric_10_3 = Annotated[Decimal, mapped_column(Numeric(10, 3))]
 numeric_10_2 = Annotated[Decimal, mapped_column(Numeric(10, 2))]
 numeric_15_5 = Annotated[Decimal, mapped_column(Numeric(15, 5))]
 
-# Custom foreign key
+# Custom foreign keys
+FKUser = Annotated[UUID, mapped_column(ForeignKey("user.id", ondelete="CASCADE"))]
 FKWorkout = Annotated[UUID, mapped_column(ForeignKey("workout.id", ondelete="CASCADE"))]

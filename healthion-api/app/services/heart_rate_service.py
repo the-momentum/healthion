@@ -1,125 +1,170 @@
-from logging import Logger
+from logging import Logger, getLogger
+
+from datetime import datetime
 
 from app.database import DbSession
-from app.models.heart_rate_data import HeartRateData
-from app.models.heart_rate_recovery import HeartRateRecovery
-from app.repositories.heart_rate_repository import HeartRateDataRepository, HeartRateRecoveryRepository
-from app.schemas.heart_rate import HeartRateQueryParams
-from app.schemas.heart_rate import (
-    HeartRateDataCreate, 
-    HeartRateDataUpdate,
-    HeartRateRecoveryCreate,
-    HeartRateRecoveryUpdate
+from app.models import HeartRateData, HeartRateRecovery
+from app.schemas import (
+    HeartRateDataResponse,
+    HeartRateListResponse,
+    HeartRateMeta,
+    HeartRateQueryParams,
+    HeartRateRecoveryResponse,
+    HeartRateSummary,
+    HeartRateValue,
 )
-from app.services.services import AppService
+from .mixins.heart_rate_data_service import HeartRateDataService
+from .mixins.heart_rate_recovery_service import HeartRateRecoveryService
+from app.utils.exceptions import handle_exceptions
 
 
-class HeartRateDataService(AppService[HeartRateDataRepository, HeartRateData, HeartRateDataCreate, HeartRateDataUpdate]):
-    """Service for heart rate data business logic."""
-
-    def __init__(self, log: Logger, **kwargs):
-        super().__init__(
-            crud_model=HeartRateDataRepository,
-            model=HeartRateData,
-            log=log,
-            **kwargs
-        )
-
-    def get_heart_rate_data_with_filters(
-        self, 
-        db_session: DbSession, 
-        query_params: HeartRateQueryParams
-    ) -> tuple[list[HeartRateData], int]:
-        """
-        Get heart rate data with filtering, sorting, and pagination.
-        """
-        self.logger.info(f"Fetching heart rate data with filters: {query_params.model_dump()}")
-        
-        data, total_count = self.crud.get_heart_rate_data_with_filters(
-            db_session, query_params
-        )
-        
-        self.logger.info(f"Retrieved {len(data)} heart rate records out of {total_count} total")
-        
-        return data, total_count
-
-
-class HeartRateRecoveryService(AppService[HeartRateRecoveryRepository, HeartRateRecovery, HeartRateRecoveryCreate, HeartRateRecoveryUpdate]):
-    """Service for heart rate recovery business logic."""
-
-    def __init__(self, log: Logger, **kwargs):
-        super().__init__(
-            crud_model=HeartRateRecoveryRepository,
-            model=HeartRateRecovery,
-            log=log,
-            **kwargs
-        )
-
-    def get_heart_rate_recovery_with_filters(
-        self, 
-        db_session: DbSession, 
-        query_params: HeartRateQueryParams
-    ) -> tuple[list[HeartRateRecovery], int]:
-        """
-        Get heart rate recovery data with filtering, sorting, and pagination.
-        """
-        self.logger.info(f"Fetching heart rate recovery data with filters: {query_params.model_dump()}")
-        
-        data, total_count = self.crud.get_heart_rate_recovery_with_filters(
-            db_session, query_params
-        )
-        
-        self.logger.info(f"Retrieved {len(data)} heart rate recovery records out of {total_count} total")
-        
-        return data, total_count
-
-    def get_heart_rate_summary(
-        self, 
-        db_session: DbSession, 
-        query_params: HeartRateQueryParams
-    ) -> dict:
-        """
-        Get summary statistics for heart rate data.
-        """
-        self.logger.info(f"Generating heart rate summary with filters: {query_params.model_dump()}")
-        
-        summary = self.crud.get_heart_rate_summary(db_session, query_params)
-        
-        self.logger.info(f"Generated heart rate summary with {summary['total_records']} total records")
-        
-        return summary
-
-
-class HeartRateService(HeartRateDataService, HeartRateRecoveryService):
+class HeartRateService:
     """
-    Combined service for heart rate operations using cooperative inheritance.
+    Combined service for heart rate operations.
     Provides access to both heart rate data and recovery operations.
     """
 
-    def __init__(self, log: Logger, **kwargs):
-        # Initialize both parent services
-        HeartRateDataService.__init__(self, log=log, **kwargs)
-        HeartRateRecoveryService.__init__(self, log=log, **kwargs)
+    def __init__(
+        self, 
+        log: Logger,
+        **kwargs
+    ):
+        self.logger = log
+        self.heart_rate_data_service = HeartRateDataService(log=log, **kwargs)
+        self.heart_rate_recovery_service = HeartRateRecoveryService(log=log, **kwargs)
 
-    def get_complete_heart_rate_data(
+    @handle_exceptions
+    async def _get_complete_heart_rate_data(
         self, 
         db_session: DbSession, 
-        query_params: HeartRateQueryParams
+        query_params: HeartRateQueryParams,
+        user_id: str
     ) -> tuple[list[HeartRateData], list[HeartRateRecovery], dict, int, int]:
         """
         Get complete heart rate data including both data and recovery records with summary.
-        Uses cooperative inheritance to access both repositories.
         
         Returns:
             Tuple of (heart_rate_data, heart_rate_recovery, summary, hr_total_count, recovery_total_count)
         """
         self.logger.info(f"Fetching complete heart rate data with filters: {query_params.model_dump()}")
         
-        # Use cooperative inheritance to call both parent methods
-        hr_data, hr_total_count = self.get_heart_rate_data_with_filters(db_session, query_params)
-        recovery_data, recovery_total_count = self.get_heart_rate_recovery_with_filters(db_session, query_params)
-        summary = self.get_heart_rate_summary(db_session, query_params)
+        # Use methods from composed services
+        hr_data, hr_total_count = await self.heart_rate_data_service.get_heart_rate_data_with_filters(db_session, query_params, user_id)
+        recovery_data, recovery_total_count = await self.heart_rate_recovery_service.get_heart_rate_recovery_with_filters(db_session, query_params, user_id)
+        summary = await self.heart_rate_recovery_service.get_heart_rate_summary(db_session, query_params, user_id)
         
         self.logger.info(f"Retrieved complete heart rate data: {hr_total_count} HR records, {recovery_total_count} recovery records")
         
         return hr_data, recovery_data, summary, hr_total_count, recovery_total_count
+
+    @handle_exceptions
+    async def buil_heart_rate_full_data_response(
+        self, 
+        db_session: DbSession, 
+        query_params: HeartRateQueryParams,
+        user_id: str
+    ) -> HeartRateListResponse:
+        """
+        Get complete heart rate data formatted as API response.
+        
+        Returns:
+            HeartRateListResponse ready for API
+        """
+        # Get raw data
+        hr_data, recovery_data, summary_data, hr_total_count, recovery_total_count = await self._get_complete_heart_rate_data(db_session, query_params, user_id)
+        
+        # Convert heart rate data to response format
+        heart_rate_responses = []
+        for hr_data_item in hr_data:
+            heart_rate_response = HeartRateDataResponse(
+                id=hr_data_item.id,
+                workout_id=hr_data_item.workout_id,
+                date=hr_data_item.date.isoformat(),
+                source=hr_data_item.source,
+                units=hr_data_item.units,
+                avg=(
+                    HeartRateValue(
+                        value=float(hr_data_item.avg or 0),
+                        unit=hr_data_item.units or "bpm",
+                    )
+                    if hr_data_item.avg
+                    else None
+                ),
+                min=(
+                    HeartRateValue(
+                        value=float(hr_data_item.min or 0),
+                        unit=hr_data_item.units or "bpm",
+                    )
+                    if hr_data_item.min
+                    else None
+                ),
+                max=(
+                    HeartRateValue(
+                        value=float(hr_data_item.max or 0),
+                        unit=hr_data_item.units or "bpm",
+                    )
+                    if hr_data_item.max
+                    else None
+                ),
+            )
+            heart_rate_responses.append(heart_rate_response)
+
+        # Convert heart rate recovery data to response format
+        heart_rate_recovery_responses = []
+        for hr_recovery_item in recovery_data:
+            heart_rate_recovery_response = HeartRateRecoveryResponse(
+                id=hr_recovery_item.id,
+                workout_id=hr_recovery_item.workout_id,
+                date=hr_recovery_item.date.isoformat(),
+                source=hr_recovery_item.source,
+                units=hr_recovery_item.units,
+                avg=(
+                    HeartRateValue(
+                        value=float(hr_recovery_item.avg or 0),
+                        unit=hr_recovery_item.units or "bpm",
+                    )
+                    if hr_recovery_item.avg
+                    else None
+                ),
+                min=(
+                    HeartRateValue(
+                        value=float(hr_recovery_item.min or 0),
+                        unit=hr_recovery_item.units or "bpm",
+                    )
+                    if hr_recovery_item.min
+                    else None
+                ),
+                max=(
+                    HeartRateValue(
+                        value=float(hr_recovery_item.max or 0),
+                        unit=hr_recovery_item.units or "bpm",
+                    )
+                    if hr_recovery_item.max
+                    else None
+                ),
+            )
+            heart_rate_recovery_responses.append(heart_rate_recovery_response)
+
+        # Build summary
+        summary = HeartRateSummary(**summary_data)
+
+        # Build metadata
+        meta = HeartRateMeta(
+            requested_at=datetime.now().isoformat() + "Z",
+            filters=query_params.model_dump(exclude_none=True),
+            result_count=hr_total_count + recovery_total_count,
+            date_range={
+                "start": query_params.start_date or "1900-01-01T00:00:00Z",
+                "end": query_params.end_date or datetime.now().isoformat() + "Z",
+            },
+        )
+
+        return HeartRateListResponse(
+            data=heart_rate_responses,
+            recovery_data=heart_rate_recovery_responses,
+            summary=summary,
+            meta=meta,
+        )
+
+
+heart_rate_service = HeartRateService(log=getLogger(__name__))

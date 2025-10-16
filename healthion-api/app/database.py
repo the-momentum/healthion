@@ -55,13 +55,20 @@ SessionLocal = _prepare_sessionmaker(engine)
 
 
 def _get_db_dependency() -> Iterator[Session]:
+    from logging import getLogger
+    logger = getLogger(__name__)
+    logger.info("=== _get_db_dependency called ===")
+    
     db = SessionLocal()
     try:
+        logger.info("Database session created successfully")
         yield db
     except Exception as exc:
+        logger.error(f"Database error: {exc}")
         db.rollback()
         raise exc
     finally:
+        logger.info("Closing database session")
         db.close()
 
 

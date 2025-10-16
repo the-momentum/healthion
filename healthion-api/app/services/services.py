@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from app.database import BaseDbModel, DbSession
-from app.repositories.repositories import CrudRepository
+from app.repositories import CrudRepository
 from app.schemas import FilterParams
 from app.utils.exceptions import ResourceNotFoundError, handle_exceptions
 

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped
 from app.database import BaseDbModel
 from app.mappings import (
+    FKUser,
     FKWorkout,
     ManyToOne,
     PrimaryKey,
@@ -11,6 +12,7 @@ from app.mappings import (
 
 class HeartRateData(BaseDbModel):
     id: Mapped[PrimaryKey[int]]
+    user_id: Mapped[FKUser]
     workout_id: Mapped[FKWorkout]
     date: Mapped[datetime_tz]
     source: Mapped[str | None]
@@ -19,4 +21,5 @@ class HeartRateData(BaseDbModel):
     min: Mapped[numeric_10_3 | None]
     max: Mapped[numeric_10_3 | None]
 
+    user: Mapped[ManyToOne["User"]]
     workout: Mapped[ManyToOne["Workout"]]

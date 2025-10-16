@@ -1,12 +1,27 @@
-from logging import Logger
+from datetime import datetime
+from logging import Logger, getLogger
 from uuid import UUID
 
 from app.database import DbSession
-from app.models.workout import Workout
-from app.repositories.workout_repository import WorkoutRepository
-from app.schemas.workout import WorkoutQueryParams
-from app.schemas.workout import WorkoutCreate, WorkoutUpdate
-from app.services.services import AppService
+from app.models import Workout
+from app.repositories import WorkoutRepository
+from app.schemas import (
+    WorkoutQueryParams, 
+    WorkoutCreate, 
+    WorkoutUpdate,
+    WorkoutListResponse,
+    WorkoutResponse,
+    WorkoutSummary,
+    WorkoutMeta,
+    DistanceValue,
+    ActiveEnergyValue,
+    IntensityValue,
+    TemperatureValue,
+    HumidityValue,
+    DateRange,
+)
+from app.services import AppService
+from app.utils.exceptions import handle_exceptions
 
 
 class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, WorkoutUpdate]):
@@ -20,11 +35,12 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
             **kwargs
         )
 
-    def get_workouts_with_filters(
+    @handle_exceptions
+    def _get_workouts_with_filters(
         self, 
         db_session: DbSession, 
         query_params: WorkoutQueryParams,
-        user_id: UUID | None = None
+        user_id: str
     ) -> tuple[list[Workout], int]:
         """
         Get workouts with filtering, sorting, and pagination.
@@ -40,7 +56,8 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
         
         return workouts, total_count
 
-    def get_workout_with_summary(
+    @handle_exceptions
+    def _get_workout_with_summary(
         self, 
         db_session: DbSession, 
         workout_id: UUID
@@ -56,3 +73,84 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
         self.logger.info(f"Retrieved workout {workout_id} with summary data")
         
         return workout, summary
+
+    @handle_exceptions
+    def get_workouts_response(
+        self, 
+        db_session: DbSession, 
+        query_params: WorkoutQueryParams,
+        user_id: str
+    ) -> WorkoutListResponse:
+        """
+        Get workouts formatted as API response.
+        
+        Returns:
+            WorkoutListResponse ready for API
+        """
+        # Get raw data
+        workouts, total_count = self._get_workouts_with_filters(db_session, query_params, user_id)
+        
+        # Convert workouts to response format
+        workout_responses = []
+        for workout in workouts:
+            # Get summary data
+            _, summary_data = self._get_workout_with_summary(db_session, workout.id)
+            
+            # Build response object
+            workout_response = WorkoutResponse(
+                id=workout.id,
+                name=workout.name or "Unknown Workout",
+                location=workout.location or "Outdoor",
+                start=workout.start.isoformat(),
+                end=workout.end.isoformat(),
+                duration=int(workout.duration or 0),
+                distance=DistanceValue(
+                    value=float(workout.distance_qty or 0),
+                    unit=workout.distance_units or "km",
+                ),
+                active_energy_burned=ActiveEnergyValue(
+                    value=float(workout.active_energy_burned_qty or 0),
+                    unit=workout.active_energy_burned_units or "kJ",
+                ),
+                intensity=IntensityValue(
+                    value=float(workout.intensity_qty or 0),
+                    unit=workout.intensity_units or "kcal/hr·kg",
+                ),
+                temperature=(
+                    TemperatureValue(
+                        value=float(workout.temperature_qty or 0),
+                        unit=workout.temperature_units or "°C",
+                    )
+                    if workout.temperature_qty
+                    else None
+                ),
+                humidity=(
+                    HumidityValue(
+                        value=float(workout.humidity_qty or 0),
+                        unit=workout.humidity_units or "%",
+                    )
+                    if workout.humidity_qty
+                    else None
+                ),
+                summary=WorkoutSummary(**summary_data),
+            )
+            workout_responses.append(workout_response)
+
+        # Build metadata
+        meta = WorkoutMeta(
+            requested_at=datetime.now().isoformat() + "Z",
+            filters=query_params.model_dump(exclude_none=True),
+            result_count=total_count,
+            date_range=DateRange(
+                start=query_params.start_date or "1900-01-01T00:00:00Z",
+                end=query_params.end_date or datetime.now().isoformat() + "Z",
+            ),
+        )
+
+        return WorkoutListResponse(
+            data=workout_responses,
+            meta=meta,
+        )
+
+
+workout_service = WorkoutService(log=getLogger(__name__))

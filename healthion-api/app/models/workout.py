@@ -4,6 +4,8 @@ from sqlalchemy.orm import Mapped
 
 from app.database import BaseDbModel
 from app.mappings import (
+    FKUser,
+    ManyToOne,
     OneToMany,
     PrimaryKey,
     datetime_tz,
@@ -18,6 +20,7 @@ from app.mappings import (
 
 class Workout(BaseDbModel):
     id: Mapped[PrimaryKey[UUID]]
+    user_id: Mapped[FKUser]
     name: Mapped[str_255 | None]
     location: Mapped[str_100 | None]
     start: Mapped[datetime_tz]
@@ -35,6 +38,7 @@ class Workout(BaseDbModel):
     temperature_qty: Mapped[numeric_10_2 | None]
     temperature_units: Mapped[str_10 | None]
 
+    user: Mapped[ManyToOne["User"]]
     heart_rate_data: Mapped[OneToMany["HeartRateData"]]
     heart_rate_recovery: Mapped[OneToMany["HeartRateRecovery"]]
     active_energy: Mapped[OneToMany["ActiveEnergy"]]
