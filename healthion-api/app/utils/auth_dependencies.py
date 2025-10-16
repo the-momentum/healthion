@@ -19,13 +19,13 @@ async def get_current_user(
     payload = await auth0_service.verify_token(token)
     
     auth0_id = auth0_service.get_user_id(payload)
-    email = auth0_service.get_user_email(payload)
+    # email = auth0_service.get_user_email(token)
     permissions = auth0_service.get_user_permissions(payload)
     
-    user = await user_service.get_or_create_user(
+    user = user_service.get_or_create_user(
         db,
         auth0_id=auth0_id,
-        email=email
+        email="email@test.com"
     )
     
     return UserInfo(

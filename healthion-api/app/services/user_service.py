@@ -18,17 +18,16 @@ class UserService(AppService[UserRepository, User, UserCreate, UserUpdate]):
         )
         self.user_repository = UserRepository(User)
 
-    @handle_exceptions
-    async def get_or_create_user(self, db_session: DbSession, auth0_id: str, email: str) -> User:
+    def get_or_create_user(self, db_session: DbSession, auth0_id: str, email: str) -> User:
         if not auth0_id or not email:
             raise ValueError("auth0_id and email are required")
         
-        user = await self._get_user_by_auth0_id(db_session, auth0_id)
+        user = self._get_user_by_auth0_id(db_session, auth0_id)
         
         if user:
             if str(user.email) != email:
                 user_update = UserUpdate(email=email)
-                user = await self.update(db_session, user.id, user_update)
+                user = self.update(db_session, user.id, user_update)
             return user
         
         user_create = UserCreate(
@@ -36,10 +35,9 @@ class UserService(AppService[UserRepository, User, UserCreate, UserUpdate]):
             email=email
         )
         
-        return await self.create(db_session, user_create)
+        return self.create(db_session, user_create)
 
-    @handle_exceptions
-    async def _get_user_by_auth0_id(self, db_session: DbSession, auth0_id: str) -> User | None:
+    def _get_user_by_auth0_id(self, db_session: DbSession, auth0_id: str) -> User | None:
         return self.user_repository.get_user_by_auth0_id(db_session, auth0_id)
 
 

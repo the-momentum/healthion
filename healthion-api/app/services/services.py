@@ -29,13 +29,11 @@ class AppService[
         self.logger = log
         super().__init__(**kwargs)
 
-    @handle_exceptions
     def create(self, db_session: DbSession, creator: CreateSchemaType) -> ModelType:
         creation = self.crud.create(db_session, creator)
         self.logger.info(f"Created {self.name} with ID: {creation.id}.")
         return creation
 
-    @handle_exceptions
     def get(
         self,
         db_session: DbSession,
@@ -53,7 +51,6 @@ class AppService[
 
         return fetched
 
-    @handle_exceptions
     def get_all(
         self,
         db_session: DbSession,

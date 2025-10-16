@@ -127,11 +127,13 @@ class Auth0Service:
             )
         return user_id
 
-    def get_user_email(self, payload: dict[str, Any]) -> str | None:
-        """Extract user email from token payload."""
-        if not payload:
-            return None
-        return payload.get("email")
+    def get_user_email(self, token: str) -> str | None:
+        userinfo_url = f"https://{self.domain}/userinfo"
+        headers = {"Authorization": f"Bearer {token}"}
+        response = httpx.get(userinfo_url, headers=headers)
+        response.raise_for_status()
+        userinfo = response.json()
+        return userinfo.get("email")
 
     def get_user_permissions(self, payload: dict[str, Any]) -> list[str]:
         """Extract user permissions from token payload."""
