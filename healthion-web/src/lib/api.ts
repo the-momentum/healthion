@@ -270,7 +270,7 @@ class ApiService {
       headers.Authorization = `Bearer ${token}`
     }
 
-    return this.makeRequest('/import_data', {
+    return this.makeRequest('/import-data', {
       method: 'POST',
       body: formData,
       headers,

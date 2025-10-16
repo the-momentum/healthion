@@ -20,7 +20,7 @@ export default function Workouts() {
         sort_order: 'desc' as 'asc' | 'desc'
     });
     
-    const { data: workoutData, meta: workoutMeta, loading: workoutLoading, refetch } = useWorkouts(filters);
+    const { data: workoutData, meta: workoutMeta, loading: workoutLoading, error: workoutError, refetch } = useWorkouts(filters);
 
     const handleFilterChange = (key: string, value: string) => {
         setFilters(prev => ({
@@ -119,12 +119,12 @@ export default function Workouts() {
                         </div>
                         <div>
                             <label className="text-sm font-medium">Location</label>
-                            <Select value={filters.location || ''} onValueChange={(value) => handleFilterChange('location', value)}>
+                            <Select value={filters.location || 'all'} onValueChange={(value) => handleFilterChange('location', value === 'all' ? '' : value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="All locations" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">All locations</SelectItem>
+                                    <SelectItem value="all">All locations</SelectItem>
                                     <SelectItem value="Indoor">Indoor</SelectItem>
                                     <SelectItem value="Outdoor">Outdoor</SelectItem>
                                 </SelectContent>
@@ -215,7 +215,15 @@ export default function Workouts() {
                     <CardDescription>Your workout sessions</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {workoutLoading ? (
+                    {workoutError ? (
+                        <div className="text-center py-8">
+                            <p className="text-red-600 font-medium">Error loading workout data</p>
+                            <p className="text-sm text-muted-foreground mt-2">{workoutError}</p>
+                            <Button onClick={refetch} className="mt-4">
+                                Try Again
+                            </Button>
+                        </div>
+                    ) : workoutLoading ? (
                         <div className="space-y-3">
                             {[...Array(5)].map((_, i) => (
                                 <div key={i} className="flex justify-between items-center p-3 border rounded">
