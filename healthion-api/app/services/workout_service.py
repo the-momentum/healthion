@@ -36,7 +36,7 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
         )
 
     @handle_exceptions
-    def _get_workouts_with_filters(
+    async def _get_workouts_with_filters(
         self, 
         db_session: DbSession, 
         query_params: WorkoutQueryParams,
@@ -57,7 +57,7 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
         return workouts, total_count
 
     @handle_exceptions
-    def _get_workout_with_summary(
+    async def _get_workout_with_summary(
         self, 
         db_session: DbSession, 
         workout_id: UUID
@@ -75,7 +75,7 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
         return workout, summary
 
     @handle_exceptions
-    def get_workouts_response(
+    async def get_workouts_response(
         self, 
         db_session: DbSession, 
         query_params: WorkoutQueryParams,
@@ -88,13 +88,13 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
             WorkoutListResponse ready for API
         """
         # Get raw data
-        workouts, total_count = self._get_workouts_with_filters(db_session, query_params, user_id)
+        workouts, total_count = await self._get_workouts_with_filters(db_session, query_params, user_id)
         
         # Convert workouts to response format
         workout_responses = []
         for workout in workouts:
             # Get summary data
-            _, summary_data = self._get_workout_with_summary(db_session, workout.id)
+            _, summary_data = await self._get_workout_with_summary(db_session, workout.id)
             
             # Build response object
             workout_response = WorkoutResponse(
@@ -136,14 +136,24 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
             )
             workout_responses.append(workout_response)
 
+        # Calculate date range and duration
+        start_date_str = query_params.start_date or "1900-01-01T00:00:00Z"
+        end_date_str = query_params.end_date or datetime.now().isoformat() + "Z"
+        
+        # Parse dates to calculate duration
+        start_date = datetime.fromisoformat(start_date_str.replace("Z", "+00:00"))
+        end_date = datetime.fromisoformat(end_date_str.replace("Z", "+00:00"))
+        duration_days = (end_date - start_date).days
+        
         # Build metadata
         meta = WorkoutMeta(
             requested_at=datetime.now().isoformat() + "Z",
             filters=query_params.model_dump(exclude_none=True),
             result_count=total_count,
             date_range=DateRange(
-                start=query_params.start_date or "1900-01-01T00:00:00Z",
-                end=query_params.end_date or datetime.now().isoformat() + "Z",
+                start=start_date_str,
+                end=end_date_str,
+                duration_days=duration_days,
             ),
         )
 

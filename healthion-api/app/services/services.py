@@ -31,7 +31,7 @@ class AppService[
 
     def create(self, db_session: DbSession, creator: CreateSchemaType) -> ModelType:
         creation = self.crud.create(db_session, creator)
-        self.logger.info(f"Created {self.name} with ID: {creation.id}.")
+        # self.logger.info(f"Created {self.name} with ID: {creation.id}.")
         return creation
 
     def get(
@@ -44,10 +44,10 @@ class AppService[
         if not (fetched := self.crud.get(db_session, object_id)) and raise_404:
             raise ResourceNotFoundError(self.name, object_id)
 
-        if fetched and print_log:
-            self.logger.info(f"Fetched {self.name} with ID: {fetched.id}.")
-        elif not fetched:
-            self.logger.info(f"{self.name} with ID: {object_id} not found.")
+        # if fetched and print_log:
+        #     self.logger.info(f"Fetched {self.name} with ID: {fetched.id}.")
+        # elif not fetched:
+        #     self.logger.info(f"{self.name} with ID: {object_id} not found.")
 
         return fetched
 

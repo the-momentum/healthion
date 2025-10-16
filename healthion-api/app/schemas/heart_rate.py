@@ -106,6 +106,7 @@ class HeartRateListResponse(BaseModel):
 class HeartRateDataCreate(BaseModel):
     """Schema for creating heart rate data."""
     
+    user_id: UUID
     workout_id: UUID
     date: datetime
     source: str | None = None
@@ -129,6 +130,7 @@ class HeartRateDataUpdate(BaseModel):
 class HeartRateRecoveryCreate(BaseModel):
     """Schema for creating heart rate recovery data."""
     
+    user_id: UUID
     workout_id: UUID
     date: datetime
     source: str | None = None

@@ -58,7 +58,7 @@ class HeartRateService:
         return hr_data, recovery_data, summary, hr_total_count, recovery_total_count
 
     @handle_exceptions
-    async def buil_heart_rate_full_data_response(
+    async def build_heart_rate_full_data_response(
         self, 
         db_session: DbSession, 
         query_params: HeartRateQueryParams,
