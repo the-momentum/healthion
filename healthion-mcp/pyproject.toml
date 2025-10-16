@@ -1,0 +1,67 @@
+[project]
+name = "healthion-mcp"
+version = "0.1.0"
+description = "Healthion MCP"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=45.0.4",
+    "passlib>=1.7.4",
+    "pydantic-settings>=2.10.1",
+    "fastmcp>=2.12",
+    "pydantic>=2.11.7",
+    "httpx>=0.25.0",
+]
+
+[dependency-groups]
+code-quality = [
+    "pre-commit>=4.3.0",
+    "ruff>=0.12.10",
+    "ty>=0.0.1a19",
+]
+dev = [
+    "alembic>=1.16.4",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.0.0",
+    "pytest-cov>=6.2.1",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = 'py312'
+
+[tool.ruff.lint]
+select = [
+    "I",     # isort
+    "F",     # pyflakes
+    "FAST",  # FastApi
+    "ANN",   # flake8-annotations
+    "ASYNC", # flake8-async
+    "COM",   # flake8-commas
+    "T10",   # flake8-debugger
+    "PT",    # flake8-pytest-style
+    "RET",   # flake8-return
+    "SIM",   # flake8-simplify
+    "N",     # pep8-naming
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+]
+ignore = [
+    "ANN002", # missing-type-args
+    "ANN003", # missing-type-kwargs
+    "ANN204", # missing-return-type-special-method
+    "ANN401", # any-type
+    "RET503", # implicit-return
+]
+
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "app"
+
+[project.scripts]
+start = "start:main"
