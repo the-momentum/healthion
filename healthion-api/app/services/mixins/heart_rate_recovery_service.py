@@ -33,13 +33,13 @@ class HeartRateRecoveryService(AppService[HeartRateRecoveryRepository, HeartRate
         """
         Get heart rate recovery data with filtering, sorting, and pagination.
         """
-        self.logger.info(f"Fetching heart rate recovery data with filters: {query_params.model_dump()}")
+        self.logger.debug(f"Fetching heart rate recovery data with filters: {query_params.model_dump()}")
         
         data, total_count = self.crud.get_heart_rate_recovery_with_filters(
             db_session, query_params, user_id
         )
         
-        self.logger.info(f"Retrieved {len(data)} heart rate recovery records out of {total_count} total")
+        self.logger.debug(f"Retrieved {len(data)} heart rate recovery records out of {total_count} total")
         
         return data, total_count
 
@@ -53,10 +53,10 @@ class HeartRateRecoveryService(AppService[HeartRateRecoveryRepository, HeartRate
         """
         Get summary statistics for heart rate data.
         """
-        self.logger.info(f"Generating heart rate summary with filters: {query_params.model_dump()}")
+        self.logger.debug(f"Generating heart rate summary with filters: {query_params.model_dump()}")
         
         summary = self.crud.get_heart_rate_summary(db_session, query_params, user_id)
         
-        self.logger.info(f"Generated heart rate summary with {summary['total_records']} total records")
+        self.logger.debug(f"Generated heart rate summary with {summary['total_records']} total records")
         
         return summary

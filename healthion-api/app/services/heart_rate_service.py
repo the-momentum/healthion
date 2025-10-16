@@ -46,14 +46,14 @@ class HeartRateService:
         Returns:
             Tuple of (heart_rate_data, heart_rate_recovery, summary, hr_total_count, recovery_total_count)
         """
-        self.logger.info(f"Fetching complete heart rate data with filters: {query_params.model_dump()}")
+        self.logger.debug(f"Fetching complete heart rate data with filters: {query_params.model_dump()}")
         
         # Use methods from composed services
         hr_data, hr_total_count = await self.heart_rate_data_service.get_heart_rate_data_with_filters(db_session, query_params, user_id)
         recovery_data, recovery_total_count = await self.heart_rate_recovery_service.get_heart_rate_recovery_with_filters(db_session, query_params, user_id)
         summary = await self.heart_rate_recovery_service.get_heart_rate_summary(db_session, query_params, user_id)
         
-        self.logger.info(f"Retrieved complete heart rate data: {hr_total_count} HR records, {recovery_total_count} recovery records")
+        self.logger.debug(f"Retrieved complete heart rate data: {hr_total_count} HR records, {recovery_total_count} recovery records")
         
         return hr_data, recovery_data, summary, hr_total_count, recovery_total_count
 
