@@ -1,0 +1,23 @@
+from sqlalchemy.orm import Mapped
+
+from app.database import BaseDbModel
+from app.mappings import (
+    PrimaryKey,
+    datetime_tz,
+    numeric_15_5,
+    str_10,
+    str_100,
+    str_50,
+)
+
+class Record(BaseDbModel):
+    id: Mapped[PrimaryKey[int]]
+    type: Mapped[str_50]
+    sourceVersion: Mapped[str_100]
+    sourceName: Mapped[str_100]
+    deviceId: Mapped[str_100]
+    startDate: Mapped[datetime_tz]
+    endDate: Mapped[datetime_tz]
+    creationDate: Mapped[datetime_tz]
+    unit: Mapped[str_10]
+    value: Mapped[numeric_15_5]
