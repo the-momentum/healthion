@@ -1,4 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react'
+import { apiService, User } from '../lib/api'
+import { useState, useEffect } from 'react'
 
 export const useAuth = () => {
   const {
@@ -10,6 +12,32 @@ export const useAuth = () => {
     getAccessTokenSilently,
     getIdTokenClaims,
   } = useAuth0()
+
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [isLoadingUser, setIsLoadingUser] = useState(false)
+
+  // Fetch current user data when authenticated
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (isAuthenticated && !isLoading) {
+        setIsLoadingUser(true)
+        try {
+          const token = await getAccessTokenSilently()
+          const response = await apiService.getCurrentUser(token)
+          setCurrentUser(response.data)
+        } catch (error) {
+          console.error('Error fetching current user:', error)
+          setCurrentUser(null)
+        } finally {
+          setIsLoadingUser(false)
+        }
+      } else {
+        setCurrentUser(null)
+      }
+    }
+
+    fetchCurrentUser()
+  }, [isAuthenticated, isLoading, getAccessTokenSilently])
 
   const login = () => {
     loginWithRedirect()
@@ -44,8 +72,9 @@ export const useAuth = () => {
 
   return {
     user,
+    currentUser,
     isAuthenticated,
-    isLoading,
+    isLoading: isLoading || isLoadingUser,
     login,
     logout: logoutUser,
     getAccessToken,
