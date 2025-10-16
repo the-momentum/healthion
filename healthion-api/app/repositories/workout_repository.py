@@ -5,34 +5,29 @@ from uuid import UUID
 from sqlalchemy import and_, desc, func
 from sqlalchemy.orm import Query
 
-from app.database import BaseDbModel, DbSession
-from app.models.workout import Workout
-from app.models.active_energy import ActiveEnergy
-from app.models.heart_rate_data import HeartRateData
-from app.repositories.repositories import CrudRepository
-from app.schemas.workout import WorkoutQueryParams
-from app.schemas.workout import WorkoutCreate, WorkoutUpdate
+from app.database import DbSession
+from app.models import Workout, ActiveEnergy, HeartRateData
+from app.repositories import CrudRepository
+from app.schemas import WorkoutQueryParams, WorkoutCreate, WorkoutUpdate
 
 
 class WorkoutRepository(CrudRepository[Workout, WorkoutCreate, WorkoutUpdate]):
-    """Repository for workout-related database operations."""
+    def __init__(self, model: type[Workout]):
+        super().__init__(model)
 
     def get_workouts_with_filters(
         self, 
         db_session: DbSession, 
         query_params: WorkoutQueryParams,
-        user_id: UUID | None = None
+        user_id: str
     ) -> tuple[list[Workout], int]:
-        """
-        Get workouts with filtering, sorting, and pagination.
-
-        Returns:
-            Tuple of (workouts, total_count)
-        """
         query: Query = db_session.query(Workout)
 
         # Apply filters
         filters = []
+
+        # User ID filter (always required for security)
+        filters.append(Workout.user_id == user_id)
 
         # Date range filters
         if query_params.start_date:
@@ -87,9 +82,6 @@ class WorkoutRepository(CrudRepository[Workout, WorkoutCreate, WorkoutUpdate]):
         return query.all(), total_count
 
     def get_workout_summary(self, db_session: DbSession, workout_id: UUID) -> dict:
-        """
-        Get summary statistics for a workout including heart rate and calorie data.
-        """
         # Get heart rate summary
         hr_stats = (
             db_session.query(

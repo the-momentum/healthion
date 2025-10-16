@@ -14,6 +14,8 @@ dependencies = [
     "fastapi>=0.116.1",
     "fastapi-cli>=0.0.8",
     "python-multipart>=0.0.20",
+    "python-jose[cryptography]>=3.3.0",
+    "httpx>=0.27.0",
 ]
 
 [dependency-groups]

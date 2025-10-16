@@ -41,6 +41,12 @@ class Settings(BaseSettings):
     db_user: str = "user"
     db_password: SecretStr = SecretStr("password")
 
+    # AUTH0 SETTINGS
+    auth0_domain: str = ""
+    auth0_audience: str = ""
+    auth0_issuer: str = ""
+    auth0_algorithms: list[str] = ["RS256"]
+
     @property
     def db_uri(self) -> str:
         return (
@@ -48,6 +54,10 @@ class Settings(BaseSettings):
             f"{self.db_user}:{self.db_password.get_secret_value()}"
             f"@{self.db_host}:{self.db_port}/{self.db_name}"
         )
+
+    @property
+    def auth0_issuer_url(self) -> str:
+        return f"https://{self.auth0_domain}/"
 
     # 0. pytest ini_options
     # 1. environment variables

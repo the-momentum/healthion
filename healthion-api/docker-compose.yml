@@ -18,7 +18,7 @@ services:
     command: scripts/start/app.sh
     container_name: healthion-api-app
     env_file:
-      - ./config/.env
+      - ./envs/.env
     environment:
       - DB_HOST=db
     ports:
@@ -29,8 +29,8 @@ services:
       - .:/root_project
       - /root_project/.venv
       - type: bind
-        source: ./config/.env
-        target: /root_project/config/.env
+        source: ./envs/.env
+        target: /root_project/envs/.env
         bind:
           create_host_path: false
     restart: on-failure
