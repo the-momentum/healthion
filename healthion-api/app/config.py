@@ -15,7 +15,7 @@ class EnvironmentType(str, Enum):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=str(Path(__file__).parent.parent / "config" / ".env"),
+        env_file=str(Path(__file__).parent.parent / "envs" / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
