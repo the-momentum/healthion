@@ -33,12 +33,12 @@ class HeartRateDataService(AppService[HeartRateDataRepository, HeartRateData, He
         """
         Get heart rate data with filtering, sorting, and pagination.
         """
-        self.logger.info(f"Fetching heart rate data with filters: {query_params.model_dump()}")
+        self.logger.debug(f"Fetching heart rate data with filters: {query_params.model_dump()}")
         
         data, total_count = self.crud.get_heart_rate_data_with_filters(
             db_session, query_params, user_id
         )
         
-        self.logger.info(f"Retrieved {len(data)} heart rate records out of {total_count} total")
+        self.logger.debug(f"Retrieved {len(data)} heart rate records out of {total_count} total")
         
         return data, total_count
