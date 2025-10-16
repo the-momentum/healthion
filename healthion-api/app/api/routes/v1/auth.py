@@ -12,14 +12,9 @@ router = APIRouter()
 async def get_current_user_info(
     current_user: Annotated[UserInfo, Depends(get_current_user)]
 ) -> UserResponse:
-    """
-    Get current authenticated user information.
-    
-    Returns:
-        UserResponse: User information including ID, email, and permissions
-    """
     return UserResponse(
         user_id=current_user.user_id,
+        auth0_id=current_user.auth0_id,
         email=current_user.email,
         permissions=current_user.permissions
     )

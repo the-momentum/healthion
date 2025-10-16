@@ -1,7 +1,8 @@
 from typing import Any
-from uuid import UUID
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserInfo(BaseModel):
@@ -16,13 +17,17 @@ class UserInfo(BaseModel):
 
 class UserResponse(BaseModel):    
     user_id: UUID
+    auth0_id: str
     email: str
     permissions: list[str]
 
 
 class UserCreate(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
     auth0_id: str
     email: EmailStr
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class UserUpdate(BaseModel):
