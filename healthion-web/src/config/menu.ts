@@ -1,5 +1,8 @@
 import {
     Gauge,
+    Upload,
+    Heart,
+    Activity,
     LucideIcon
 } from 'lucide-react'
 
@@ -17,5 +20,20 @@ export const mainMenu: MenuType = [
         title: 'Dashboard',
         url: '/',
         icon: Gauge
+    },
+    {
+        title: 'Heart Rate',
+        url: '/pages/heart-rate',
+        icon: Heart
+    },
+    {
+        title: 'Workouts',
+        url: '/pages/workouts',
+        icon: Activity
+    },
+    {
+        title: 'Connect Data',
+        url: '/pages/import',
+        icon: Upload
     },
 ]

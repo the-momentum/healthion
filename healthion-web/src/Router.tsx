@@ -6,6 +6,9 @@ import Dashboard from './pages/Dashboard'
 import Sample from './pages/Sample'
 import ComingSoon from './pages/ComingSoon'
 import Profile from './pages/Profile'
+import ImportData from './pages/ImportData'
+import HeartRate from './pages/HeartRate'
+import Workouts from './pages/Workouts'
 
 export default function Router() {
     return (
@@ -25,6 +28,21 @@ export default function Router() {
                     <Route path="profile" element={
                         <AuthGuard>
                             <Profile />
+                        </AuthGuard>
+                    } />
+                    <Route path="import" element={
+                        <AuthGuard>
+                            <ImportData />
+                        </AuthGuard>
+                    } />
+                    <Route path="heart-rate" element={
+                        <AuthGuard>
+                            <HeartRate />
+                        </AuthGuard>
+                    } />
+                    <Route path="workouts" element={
+                        <AuthGuard>
+                            <Workouts />
                         </AuthGuard>
                     } />
                     <Route path="feature" element={<ComingSoon />} />
