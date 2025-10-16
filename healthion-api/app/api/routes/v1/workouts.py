@@ -17,4 +17,4 @@ async def get_workouts_endpoint(
     query_params: WorkoutQueryParams = Depends(),
 ):
     """Get workouts with filtering, sorting, and pagination."""
-    return workout_service.get_workouts_response(db, query_params, user_id)
+    return await workout_service.get_workouts_response(db, query_params, user_id)

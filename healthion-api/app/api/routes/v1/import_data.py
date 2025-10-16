@@ -8,7 +8,7 @@ from app.database import DbSession
 router = APIRouter()
 
 
-@router.post("/import_data")
+@router.post("/import-data")
 async def import_data(
     request: Request,
     db: DbSession,

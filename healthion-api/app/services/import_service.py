@@ -6,7 +6,9 @@ from typing import Iterable
 from logging import Logger, getLogger
 
 from app.database import DbSession
-from app.services import workout_service, heart_rate_service, active_energy_service
+from app.services.heart_rate_service import heart_rate_service
+from app.services.workout_service import workout_service
+from app.services.active_energy_service import active_energy_service
 from app.utils.exceptions import handle_exceptions
 from app.schemas import (
     ImportBundle,
@@ -144,28 +146,28 @@ class ImportService:
         for bundle in self._build_import_bundles(raw):
             workout_data = bundle.workout.model_dump()
             if user_id:
-                workout_data['user_id'] = user_id
+                workout_data['user_id'] = UUID(user_id)
             workout_create = WorkoutCreate(**workout_data)
             self.workout_service.create(db_session, workout_create)
 
             for row in bundle.heart_rate_data:
                 hr_data = row.model_dump()
                 if user_id:
-                    hr_data['user_id'] = user_id
+                    hr_data['user_id'] = UUID(user_id)
                 hr_create = HeartRateDataCreate(**hr_data)
                 self.heart_rate_data_service.create(db_session, hr_create)
 
             for row in bundle.heart_rate_recovery:
                 hr_recovery_data = row.model_dump()
                 if user_id:
-                    hr_recovery_data['user_id'] = user_id
+                    hr_recovery_data['user_id'] = UUID(user_id)
                 hr_recovery_create = HeartRateRecoveryCreate(**hr_recovery_data)
                 self.heart_rate_recovery_service.create(db_session, hr_recovery_create)
 
             for row in bundle.active_energy:
                 ae_data = row.model_dump()
                 if user_id:
-                    ae_data['user_id'] = user_id
+                    ae_data['user_id'] = UUID(user_id)
                 ae_create = ActiveEnergyCreate(**ae_data)
                 self.active_energy_service.create(db_session, ae_create)
 

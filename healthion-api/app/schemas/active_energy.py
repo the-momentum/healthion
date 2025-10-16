@@ -8,6 +8,7 @@ from pydantic import BaseModel
 class ActiveEnergyCreate(BaseModel):
     """Schema for creating active energy data."""
     
+    user_id: UUID
     workout_id: UUID
     date: datetime
     source: str | None = None

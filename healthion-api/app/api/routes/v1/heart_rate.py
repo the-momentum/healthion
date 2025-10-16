@@ -17,4 +17,4 @@ async def get_heart_rate_endpoint(
     query_params: HeartRateQueryParams = Depends(),
 ):
     """Get heart rate data with filtering, sorting, and pagination."""
-    return await heart_rate_service.buil_heart_rate_full_data_response(db, query_params, user_id)
+    return await heart_rate_service.build_heart_rate_full_data_response(db, query_params, user_id)

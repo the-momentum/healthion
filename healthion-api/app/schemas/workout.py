@@ -95,7 +95,7 @@ class WorkoutResponse(BaseModel):
     intensity: IntensityValue
     temperature: TemperatureValue | None = None
     humidity: HumidityValue | None = None
-    source: str
+    source: str | None = None
     summary: WorkoutSummary
 
 
@@ -128,6 +128,7 @@ class WorkoutCreate(BaseModel):
     """Schema for creating a workout."""
     
     id: UUID
+    user_id: UUID
     name: str | None = None
     location: str | None = None
     start: datetime
