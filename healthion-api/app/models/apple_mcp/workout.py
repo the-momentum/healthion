@@ -3,7 +3,9 @@ from sqlalchemy.orm import Mapped
 from app.database import BaseDbModel
 from app.mappings import (
     PrimaryKey,
+    FKUser,
     OneToMany,
+    ManyToOne,
     datetime_tz,
     numeric_10_2,
     str_10,
@@ -13,6 +15,8 @@ from app.mappings import (
 
 class XMLWorkout(BaseDbModel):
     id: Mapped[PrimaryKey[int]]
+    user_id: Mapped[FKUser]
+
     type: Mapped[str_50]
     duration: Mapped[numeric_10_2]
     durationUnit: Mapped[str_10]
@@ -21,4 +25,5 @@ class XMLWorkout(BaseDbModel):
     endDate: Mapped[datetime_tz]
     creationDate: Mapped[datetime_tz]
 
+    user: Mapped[ManyToOne["User"]]
     workout_stats: Mapped[OneToMany["WorkoutStatistic"]]

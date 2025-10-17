@@ -3,6 +3,8 @@ from sqlalchemy.orm import Mapped
 from app.database import BaseDbModel
 from app.mappings import (
     PrimaryKey,
+    FKUser,
+    ManyToOne,
     datetime_tz,
     numeric_15_5,
     str_10,
@@ -12,6 +14,8 @@ from app.mappings import (
 
 class Record(BaseDbModel):
     id: Mapped[PrimaryKey[int]]
+    user_id: Mapped[FKUser]
+
     type: Mapped[str_50]
     sourceVersion: Mapped[str_100]
     sourceName: Mapped[str_100]
@@ -21,3 +25,5 @@ class Record(BaseDbModel):
     creationDate: Mapped[datetime_tz]
     unit: Mapped[str_10]
     value: Mapped[numeric_15_5]
+
+    user: Mapped[ManyToOne["User"]]
