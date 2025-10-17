@@ -30,14 +30,14 @@ async def fetch_workouts(
         end_date: Filter by end date (ISO format)
         workout_type: Filter by workout type
         location: Filter by location ('Indoor' or 'Outdoor')
-        min_duration: Minimum duration in seconds
-        max_duration: Maximum duration in seconds
-        min_distance: Minimum distance filter
-        max_distance: Maximum distance filter
+        min_duration: Minimum duration in seconds (integer)
+        max_duration: Maximum duration in seconds (integer)
+        min_distance: Minimum distance filter (float)
+        max_distance: Maximum distance filter (float)
         sort_by: Sort field ('date', 'duration', 'distance', 'calories')
         sort_order: Sort order ('asc', 'desc')
-        limit: Number of records to return (max 100)
-        offset: Number of records to skip
+        limit: Number of records to return (integer, max 100, default: 20)
+        offset: Number of records to skip (integer, default: 0)
 
     Returns:
         Workout data with metadata

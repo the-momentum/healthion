@@ -32,16 +32,16 @@ async def fetch_heart_rates(
         end_date: Filter by end date (ISO format)
         workout_id: Filter by workout UUID
         source: Filter by data source
-        min_avg: Minimum average heart rate filter
-        max_avg: Maximum average heart rate filter
-        min_max: Minimum max heart rate filter
-        max_max: Maximum max heart rate filter
-        min_min: Minimum min heart rate filter
-        max_min: Maximum min heart rate filter
+        min_avg: Minimum average heart rate filter (float)
+        max_avg: Maximum average heart rate filter (float)
+        min_max: Minimum max heart rate filter (float)
+        max_max: Maximum max heart rate filter (float)
+        min_min: Minimum min heart rate filter (float)
+        max_min: Maximum min heart rate filter (float)
         sort_by: Sort field ('date', 'avg', 'max', 'min')
         sort_order: Sort order ('asc', 'desc')
-        limit: Number of records to return (max 100)
-        offset: Number of records to skip
+        limit: Number of records to return (integer, max 100, default: 20)
+        offset: Number of records to skip (integer, default: 0)
 
     Returns:
         Heart rate data with summary and metadata
