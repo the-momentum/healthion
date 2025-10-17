@@ -258,6 +258,22 @@ export default function ImportData() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
+                                <p className="text-sm font-medium">MCP Server Address:</p>
+                                <div className="flex items-center gap-2">
+                                    <code className="flex-1 p-2 bg-muted rounded text-sm font-mono">
+                                        https://healthion.dev/mcp
+                                    </code>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => copyToClipboard("https://healthion.dev/mcp")}
+                                    >
+                                        Copy
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
                                 <p className="text-sm font-medium">MCP API Key:</p>
                                 <div className="flex gap-2">
                                     <Button
