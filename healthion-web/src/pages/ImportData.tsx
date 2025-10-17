@@ -298,10 +298,16 @@ export default function ImportData() {
                                     <pre>{JSON.stringify({
                                         "mcpServers": {
                                             "healthion": {
-                                                "command": "uvicorn",
-                                                "args": ["app.main:app", "--host", "0.0.0.0", "--port", "8000"],
+                                                "command": "uv",
+                                                "args": [
+                                                    "run",
+                                                    "--frozen",
+                                                    "--directory",
+                                                    "<your-dir-project>",
+                                                    "start"
+                                                ],
                                                 "env": {
-                                                    "API_KEY": authToken || "..."
+                                                    "PATH": "{uv_bin_path}"
                                                 }
                                             }
                                         }
@@ -313,10 +319,16 @@ export default function ImportData() {
                                     onClick={() => copyToClipboard(JSON.stringify({
                                         "mcpServers": {
                                             "healthion": {
-                                                "command": "uvicorn",
-                                                "args": ["app.main:app", "--host", "0.0.0.0", "--port", "8000"],
+                                                "command": "uv",
+                                                "args": [
+                                                    "run",
+                                                    "--frozen",
+                                                    "--directory",
+                                                    "<your-dir-project>",
+                                                    "start"
+                                                ],
                                                 "env": {
-                                                    "API_KEY": authToken || "..."
+                                                    "PATH": "{uv_bin_path}"
                                                 }
                                             }
                                         }
