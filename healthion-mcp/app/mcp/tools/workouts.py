@@ -58,21 +58,22 @@ async def fetch_workouts(
     if location:
         params["location"] = location
     if min_duration is not None:
-        params["min_duration"] = min_duration
+        params["min_duration"] = int(min_duration) if isinstance(min_duration, str) else min_duration
     if max_duration is not None:
-        params["max_duration"] = max_duration
+        params["max_duration"] = int(max_duration) if isinstance(max_duration, str) else max_duration
     if min_distance is not None:
-        params["min_distance"] = min_distance
+        params["min_distance"] = float(min_distance) if isinstance(min_distance, str) else min_distance
     if max_distance is not None:
-        params["max_distance"] = max_distance
+        params["max_distance"] = float(max_distance) if isinstance(max_distance, str) else max_distance
     if sort_by:
         params["sort_by"] = sort_by
     if sort_order:
         params["sort_order"] = sort_order
     if limit is not None:
-        params["limit"] = min(limit, 100)  # Enforce max limit
+        limit_val = int(limit) if isinstance(limit, str) else limit
+        params["limit"] = min(limit_val, 100)  # Enforce max limit
     if offset is not None:
-        params["offset"] = offset
+        params["offset"] = int(offset) if isinstance(offset, str) else offset
 
     headers = {
         "Authorization": f"Bearer {settings.healthion_api_access_token.get_secret_value()}",

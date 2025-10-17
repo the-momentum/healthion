@@ -62,25 +62,26 @@ async def fetch_heart_rates(
     if source:
         params["source"] = source
     if min_avg is not None:
-        params["min_avg"] = min_avg
+        params["min_avg"] = float(min_avg) if isinstance(min_avg, str) else min_avg
     if max_avg is not None:
-        params["max_avg"] = max_avg
+        params["max_avg"] = float(max_avg) if isinstance(max_avg, str) else max_avg
     if min_max is not None:
-        params["min_max"] = min_max
+        params["min_max"] = float(min_max) if isinstance(min_max, str) else min_max
     if max_max is not None:
-        params["max_max"] = max_max
+        params["max_max"] = float(max_max) if isinstance(max_max, str) else max_max
     if min_min is not None:
-        params["min_min"] = min_min
+        params["min_min"] = float(min_min) if isinstance(min_min, str) else min_min
     if max_min is not None:
-        params["max_min"] = max_min
+        params["max_min"] = float(max_min) if isinstance(max_min, str) else max_min
     if sort_by:
         params["sort_by"] = sort_by
     if sort_order:
         params["sort_order"] = sort_order
     if limit is not None:
-        params["limit"] = min(limit, 100)  # Enforce max limit
+        limit_val = int(limit) if isinstance(limit, str) else limit
+        params["limit"] = min(limit_val, 100)  # Enforce max limit
     if offset is not None:
-        params["offset"] = offset
+        params["offset"] = int(offset) if isinstance(offset, str) else offset
 
     headers = {
         "Authorization": f"Bearer {settings.healthion_api_access_token.get_secret_value()}",
