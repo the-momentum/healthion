@@ -63,10 +63,8 @@ class ImportService:
         for w in workouts_raw:
             wjson = WorkoutJSON(**w)
 
-            try:
-                wid = UUID(wjson.id) if wjson.id else uuid4()
-            except Exception:
-                wid = uuid4()
+            # Always generate a new UUID for workouts to avoid conflicts between users
+            wid = uuid4()
 
             active_energy_burned_qty, active_energy_burned_units = self._qty_pair(
                 wjson.activeEnergyBurned
