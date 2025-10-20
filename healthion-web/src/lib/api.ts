@@ -173,8 +173,12 @@ class ApiService {
     const url = `${this.baseUrl}${endpoint}`
     
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
+    }
+
+    // Only set Content-Type if not already set (for FormData, browser sets it automatically)
+    if (!headers['Content-Type'] && !(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json'
     }
 
     if (token) {
@@ -252,8 +256,6 @@ class ApiService {
     const queryString = queryParams.toString()
     const endpoint = queryString ? `/workouts?${queryString}` : '/workouts'
 
-    console.log('🔍 Fetching workouts with query:', queryString)
-
     return this.makeRequest<WorkoutResponse>(endpoint, {
       method: 'GET',
     }, token)
@@ -264,17 +266,10 @@ class ApiService {
     const formData = new FormData()
     formData.append('file', file)
 
-    // Create headers with Authorization but without Content-Type
-    const headers: Record<string, string> = {}
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
-
     return this.makeRequest('/import-data', {
       method: 'POST',
       body: formData,
-      headers,
-    })
+    }, token)
   }
 }
 
