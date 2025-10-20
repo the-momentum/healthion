@@ -1,6 +1,8 @@
 import httpx
+
 from typing import Optional, Literal, Union
 from fastmcp import FastMCP
+from fastmcp.server.dependencies import get_access_token
 
 from app.config import settings
 
@@ -76,9 +78,14 @@ async def fetch_workouts(
         params["offset"] = int(offset) if isinstance(offset, str) else offset
 
     headers = {
-        "Authorization": f"Bearer {settings.healthion_api_access_token.get_secret_value()}",
+        # "Authorization": f"Bearer {settings.healthion_api_access_token.get_secret_value()}",
         "Content-Type": "application/json",
     }
+
+    token = get_access_token()
+    if not token:
+        raise ValueError("No access token found")
+    headers["Authorization"] = f"Bearer {token.token}"
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url, params=params, headers=headers)
