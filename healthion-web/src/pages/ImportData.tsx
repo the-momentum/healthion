@@ -113,12 +113,12 @@ export default function ImportData() {
                                 <p className="text-sm font-medium">API Endpoint:</p>
                                 <div className="flex items-center gap-2">
                                     <code className="flex-1 p-2 bg-muted rounded text-sm font-mono">
-                                        {appConfig.api.baseUrl}/import_data
+                                        {appConfig.api.baseUrl}/import-data
                                     </code>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => copyToClipboard(`${appConfig.api.baseUrl}/import_data`)}
+                                        onClick={() => copyToClipboard(`${appConfig.api.baseUrl}/import-data`)}
                                     >
                                         Copy
                                     </Button>
