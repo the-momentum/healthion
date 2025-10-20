@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useAuth } from '@/hooks/use-auth'
+import { useDataImport } from '@/hooks/use-data-import'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
@@ -7,10 +8,13 @@ import { ChevronDown, ChevronRight, Copy, Check } from 'lucide-react'
 
 export const DebugPanel = () => {
   const { user, currentUser, isAuthenticated, isLoading, getAccessToken, getIdToken } = useAuth()
+  const { importData, loading: importLoading, error: importError, success: importSuccess, reset: resetImport } = useDataImport()
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [idToken, setIdToken] = useState<string | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleGetTokens = async () => {
     try {
@@ -30,6 +34,28 @@ export const DebugPanel = () => {
       setTimeout(() => setCopied(null), 2000)
     } catch (error) {
       console.error('Failed to copy:', error)
+    }
+  }
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      resetImport() // Reset previous import states
+    }
+  }
+
+  const handleImport = async () => {
+    if (!selectedFile) return
+
+    const success = await importData(selectedFile)
+    if (success) {
+      setSelectedFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    } else {
+      console.log('❌ File upload failed')
     }
   }
 
@@ -135,16 +161,13 @@ export const DebugPanel = () => {
                     try {
                       const token = await getAccessToken()
                       if (token) {
-                        console.log('🔍 Testing /api/v1/me with token:', token.substring(0, 20) + '...')
                         const response = await fetch('http://localhost:8000/api/v1/me', {
                           headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                           }
                         })
-                        console.log('📡 Response status:', response.status)
                         const data = await response.json()
-                        console.log('📦 API Response:', data)
                         alert(`API Response: ${JSON.stringify(data, null, 2)}`)
                       }
                     } catch (error) {
@@ -163,20 +186,16 @@ export const DebugPanel = () => {
                     try {
                       const token = await getAccessToken()
                       if (token) {
-                        console.log('🔍 Testing /api/v1/heart-rate with token:', token.substring(0, 20) + '...')
                         const response = await fetch('http://localhost:8000/api/v1/heart-rate', {
                           headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                           }
                         })
-                        console.log('📡 Response status:', response.status)
                         const data = await response.json()
-                        console.log('📦 Heart Rate Response:', data)
                         alert(`Heart Rate Response: ${JSON.stringify(data, null, 2)}`)
                       }
                     } catch (error) {
-                      console.error('❌ Heart Rate Test Error:', error)
                       alert(`Heart Rate Error: ${error}`)
                     }
                   }}
@@ -191,16 +210,13 @@ export const DebugPanel = () => {
                     try {
                       const token = await getAccessToken()
                       if (token) {
-                        console.log('🔍 Testing /api/v1/workouts with token:', token.substring(0, 20) + '...')
                         const response = await fetch('http://localhost:8000/api/v1/workouts?limit=5&sort_by=date&sort_order=desc', {
                           headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                           }
                         })
-                        console.log('📡 Response status:', response.status)
                         const data = await response.json()
-                        console.log('📦 Workouts Response:', data)
                         alert(`Workouts Response: ${JSON.stringify(data, null, 2)}`)
                       }
                     } catch (error) {
@@ -211,6 +227,76 @@ export const DebugPanel = () => {
                 >
                   Test /api/v1/workouts
                 </Button>
+              </div>
+            </div>
+
+            {/* File Upload */}
+            <div>
+              <h4 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">📁 File Upload:</h4>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="file-input" className="text-sm font-medium">
+                    Select JSON file
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    id="file-input"
+                    type="file"
+                    accept=".json"
+                    onChange={handleFileSelect}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    disabled={importLoading}
+                  />
+                  {selectedFile && (
+                    <p className="text-sm text-muted-foreground">
+                      Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  )}
+                </div>
+
+                {importError && (
+                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                    Error: {importError}
+                  </div>
+                )}
+
+                {importSuccess && (
+                  <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
+                    Data imported successfully!
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleImport}
+                    disabled={!selectedFile || importLoading}
+                    className="flex-1"
+                  >
+                    {importLoading ? 'Importing...' : 'Import Data'}
+                  </Button>
+                  
+                  {selectedFile && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedFile(null)
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = ''
+                        }
+                        resetImport()
+                      }}
+                      disabled={importLoading}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+
+                <div className="text-sm text-muted-foreground">
+                  <p><strong>Supported format:</strong> JSON file</p>
+                  <p><strong>File size limit:</strong> 10MB</p>
+                  <p><strong>Note:</strong> The file should contain valid health data in the expected format.</p>
+                </div>
               </div>
             </div>
           </CardContent>

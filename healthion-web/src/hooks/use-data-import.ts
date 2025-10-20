@@ -24,15 +24,7 @@ export const useDataImport = () => {
         throw new Error('No access token available')
       }
 
-      console.log('📤 Importing file:', {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        token: token.substring(0, 20) + '...'
-      })
-
-      const response = await apiService.importData(token, file)
-      console.log('📦 Import response:', response)
+      await apiService.importData(token, file)
       setSuccess(true)
       return true
     } catch (err) {

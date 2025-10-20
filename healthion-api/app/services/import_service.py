@@ -63,10 +63,8 @@ class ImportService:
         for w in workouts_raw:
             wjson = WorkoutJSON(**w)
 
-            try:
-                wid = UUID(wjson.id) if wjson.id else uuid4()
-            except Exception:
-                wid = uuid4()
+            # Always generate a new UUID for workouts to avoid conflicts between users
+            wid = uuid4()
 
             active_energy_burned_qty, active_energy_burned_units = self._qty_pair(
                 wjson.activeEnergyBurned
@@ -200,10 +198,7 @@ class ImportService:
         return UploadDataResponse(response="Import successful")
 
     def _parse_multipart_content(self, content: str) -> dict | None:
-        """Parse multipart form data to extract JSON."""
-        if "Content-Disposition:" not in content:
-            return None
-            
+        """Parse multipart form data to extract JSON."""            
         json_start = content.find('{\n  "data"')
         if json_start == -1:
             json_start = content.find('{"data"')

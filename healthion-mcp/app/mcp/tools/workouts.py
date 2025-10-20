@@ -1,6 +1,6 @@
 import httpx
-from typing import Optional, Literal
 
+from typing import Optional, Literal, Union
 from fastmcp import FastMCP
 from fastmcp.server.dependencies import get_access_token
 
@@ -15,14 +15,14 @@ async def fetch_workouts(
     end_date: Optional[str] = None,
     workout_type: Optional[str] = None,
     location: Optional[Literal["Indoor", "Outdoor"]] = None,
-    min_duration: Optional[int] = None,
-    max_duration: Optional[int] = None,
-    min_distance: Optional[float] = None,
-    max_distance: Optional[float] = None,
+    min_duration: Optional[Union[int, str]] = None,
+    max_duration: Optional[Union[int, str]] = None,
+    min_distance: Optional[Union[float, str]] = None,
+    max_distance: Optional[Union[float, str]] = None,
     sort_by: Optional[Literal["date", "duration", "distance", "calories"]] = "date",
     sort_order: Optional[Literal["asc", "desc"]] = "desc",
-    limit: Optional[int] = 20,
-    offset: Optional[int] = 0,
+    limit: Optional[Union[int, str]] = 20,
+    offset: Optional[Union[int, str]] = 0,
 ) -> dict:
     """
     Fetch workouts with optional filtering, sorting, and pagination.
@@ -32,14 +32,14 @@ async def fetch_workouts(
         end_date: Filter by end date (ISO format)
         workout_type: Filter by workout type
         location: Filter by location ('Indoor' or 'Outdoor')
-        min_duration: Minimum duration in seconds (integer)
-        max_duration: Maximum duration in seconds (integer)
-        min_distance: Minimum distance filter (float)
-        max_distance: Maximum distance filter (float)
+        min_duration: Minimum duration in seconds (integer or string)
+        max_duration: Maximum duration in seconds (integer or string)
+        min_distance: Minimum distance filter (float or string)
+        max_distance: Maximum distance filter (float or string)
         sort_by: Sort field ('date', 'duration', 'distance', 'calories')
         sort_order: Sort order ('asc', 'desc')
-        limit: Number of records to return (integer, max 100, default: 20)
-        offset: Number of records to skip (integer, default: 0)
+        limit: Number of records to return (integer or string, max 100, default: 20)
+        offset: Number of records to skip (integer or string, default: 0)
 
     Returns:
         Workout data with metadata
