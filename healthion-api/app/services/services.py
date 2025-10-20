@@ -31,7 +31,7 @@ class AppService[
 
     def create(self, db_session: DbSession, creator: CreateSchemaType) -> ModelType:
         creation = self.crud.create(db_session, creator)
-        # self.logger.info(f"Created {self.name} with ID: {creation.id}.")
+        self.logger.debug(f"Created {self.name} with ID: {creation.id}.")
         return creation
 
     def get(
@@ -44,10 +44,10 @@ class AppService[
         if not (fetched := self.crud.get(db_session, object_id)) and raise_404:
             raise ResourceNotFoundError(self.name, object_id)
 
-        # if fetched and print_log:
-        #     self.logger.info(f"Fetched {self.name} with ID: {fetched.id}.")
-        # elif not fetched:
-        #     self.logger.info(f"{self.name} with ID: {object_id} not found.")
+        if fetched and print_log:
+            self.logger.debug(f"Fetched {self.name} with ID: {fetched.id}.")
+        elif not fetched:
+            self.logger.debug(f"{self.name} with ID: {object_id} not found.")
 
         return fetched
 
@@ -72,7 +72,7 @@ class AppService[
         if not fetched and raise_404:
             raise ResourceNotFoundError(self.name)
 
-        self.logger.info(f"Fetched {len(fetched)} {self.name}s. Filters: {filter_params.filters}.")
+        self.logger.debug(f"Fetched {len(fetched)} {self.name}s. Filters: {filter_params.filters}.")
 
         return fetched
 
@@ -85,11 +85,11 @@ class AppService[
     ) -> ModelType | None:
         if originator := self.get(db_session, object_id, print_log=False, raise_404=raise_404):
             fetched = self.crud.update(db_session, originator, updater)
-            self.logger.info(f"Updated {self.name} with ID: {fetched.id}.")
+            self.logger.debug(f"Updated {self.name} with ID: {fetched.id}.")
             return fetched
 
     def delete(self, db_session: DbSession, object_id: UUID | int, raise_404: bool = False) -> ModelType | None:
         if originator := self.get(db_session, object_id, print_log=False, raise_404=raise_404):
             deleted = self.crud.delete(db_session, originator)
-            self.logger.info(f"Deleted {self.name} with ID: {deleted.id}.")
+            self.logger.debug(f"Deleted {self.name} with ID: {deleted.id}.")
             return deleted
