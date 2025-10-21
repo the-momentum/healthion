@@ -28,6 +28,14 @@ class Settings(BaseSettings):
     # MCP SETTINGS
     mcp_server_name: str = f"MCP Server"
 
+    # AUTH0 SETTINGS
+    auth0_config_url: str
+    auth0_client_id: str
+    auth0_client_secret: SecretStr | None = None
+    auth0_audience: str
+    base_url: str = "http://localhost:8070"  # Your FastMCP server URL
+    auth0_redirect_path: str = "/auth/callback"
+
 
     # 0. pytest ini_options
     # 1. environment variables

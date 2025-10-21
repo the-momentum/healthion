@@ -198,10 +198,7 @@ class ImportService:
         return UploadDataResponse(response="Import successful")
 
     def _parse_multipart_content(self, content: str) -> dict | None:
-        """Parse multipart form data to extract JSON."""
-        if "Content-Disposition:" not in content:
-            return None
-            
+        """Parse multipart form data to extract JSON."""            
         json_start = content.find('{\n  "data"')
         if json_start == -1:
             json_start = content.find('{"data"')
