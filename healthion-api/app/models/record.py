@@ -12,6 +12,7 @@ from app.mappings import (
     str_50,
 )
 
+
 class Record(BaseDbModel):
     id: Mapped[PrimaryKey[int]]
     user_id: Mapped[FKUser]

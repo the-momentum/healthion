@@ -11,7 +11,8 @@ from app.mappings import (
     str_50,
 )
 
-class Workout2(BaseDbModel):
+
+class MetadataEntry(BaseDbModel):
     id: Mapped[PrimaryKey[UUID]]
     user_id: Mapped[FKUser]
 
@@ -20,4 +21,3 @@ class Workout2(BaseDbModel):
 
     user: Mapped[ManyToOne["User"]]
     record: Mapped[ManyToOne["Record"]]
-

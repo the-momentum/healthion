@@ -15,13 +15,14 @@ from app.mappings import (
     str_50,
 )
 
-class Workout2(BaseDbModel):
+
+class Workout(BaseDbModel):
     id: Mapped[PrimaryKey[UUID]]
     user_id: Mapped[FKUser]
 
     type: Mapped[str_50]
     duration: Mapped[numeric_10_2]
-    durationUnit: Mapped[str_10] # albo całe duration jako string?
+    durationUnit: Mapped[str_10]  # albo całe duration jako string?
     sourceName: Mapped[str_100]
 
     startDate: Mapped[datetime_tz]
