@@ -46,13 +46,13 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
         Get workouts with filtering, sorting, and pagination.
         Includes business logic and logging.
         """
-        self.logger.info(f"Fetching workouts with filters: {query_params.model_dump()}")
+        self.logger.debug(f"Fetching workouts with filters: {query_params.model_dump()}")
         
         workouts, total_count = self.crud.get_workouts_with_filters(
             db_session, query_params, user_id
         )
         
-        self.logger.info(f"Retrieved {len(workouts)} workouts out of {total_count} total")
+        self.logger.debug(f"Retrieved {len(workouts)} workouts out of {total_count} total")
         
         return workouts, total_count
 
@@ -65,12 +65,12 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
         """
         Get a single workout with its summary statistics.
         """
-        self.logger.info(f"Fetching workout {workout_id} with summary")
+        self.logger.debug(f"Fetching workout {workout_id} with summary")
         
         workout = self.get(db_session, workout_id, raise_404=True)
         summary = self.crud.get_workout_summary(db_session, workout_id)
         
-        self.logger.info(f"Retrieved workout {workout_id} with summary data")
+        self.logger.debug(f"Retrieved workout {workout_id} with summary data")
         
         return workout, summary
 

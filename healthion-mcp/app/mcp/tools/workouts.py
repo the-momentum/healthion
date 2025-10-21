@@ -1,6 +1,8 @@
 import httpx
-from typing import Optional, Literal
+
+from typing import Optional, Literal, Union
 from fastmcp import FastMCP
+from fastmcp.server.dependencies import get_access_token
 
 from app.config import settings
 
@@ -13,14 +15,14 @@ async def fetch_workouts(
     end_date: Optional[str] = None,
     workout_type: Optional[str] = None,
     location: Optional[Literal["Indoor", "Outdoor"]] = None,
-    min_duration: Optional[int] = None,
-    max_duration: Optional[int] = None,
-    min_distance: Optional[float] = None,
-    max_distance: Optional[float] = None,
+    min_duration: Optional[Union[int, str]] = None,
+    max_duration: Optional[Union[int, str]] = None,
+    min_distance: Optional[Union[float, str]] = None,
+    max_distance: Optional[Union[float, str]] = None,
     sort_by: Optional[Literal["date", "duration", "distance", "calories"]] = "date",
     sort_order: Optional[Literal["asc", "desc"]] = "desc",
-    limit: Optional[int] = 20,
-    offset: Optional[int] = 0,
+    limit: Optional[Union[int, str]] = 20,
+    offset: Optional[Union[int, str]] = 0,
 ) -> dict:
     """
     Fetch workouts with optional filtering, sorting, and pagination.
@@ -30,14 +32,14 @@ async def fetch_workouts(
         end_date: Filter by end date (ISO format)
         workout_type: Filter by workout type
         location: Filter by location ('Indoor' or 'Outdoor')
-        min_duration: Minimum duration in seconds
-        max_duration: Maximum duration in seconds
-        min_distance: Minimum distance filter
-        max_distance: Maximum distance filter
+        min_duration: Minimum duration in seconds (integer or string)
+        max_duration: Maximum duration in seconds (integer or string)
+        min_distance: Minimum distance filter (float or string)
+        max_distance: Maximum distance filter (float or string)
         sort_by: Sort field ('date', 'duration', 'distance', 'calories')
         sort_order: Sort order ('asc', 'desc')
-        limit: Number of records to return (max 100)
-        offset: Number of records to skip
+        limit: Number of records to return (integer or string, max 100, default: 20)
+        offset: Number of records to skip (integer or string, default: 0)
 
     Returns:
         Workout data with metadata
@@ -58,26 +60,32 @@ async def fetch_workouts(
     if location:
         params["location"] = location
     if min_duration is not None:
-        params["min_duration"] = min_duration
+        params["min_duration"] = int(min_duration) if isinstance(min_duration, str) else min_duration
     if max_duration is not None:
-        params["max_duration"] = max_duration
+        params["max_duration"] = int(max_duration) if isinstance(max_duration, str) else max_duration
     if min_distance is not None:
-        params["min_distance"] = min_distance
+        params["min_distance"] = float(min_distance) if isinstance(min_distance, str) else min_distance
     if max_distance is not None:
-        params["max_distance"] = max_distance
+        params["max_distance"] = float(max_distance) if isinstance(max_distance, str) else max_distance
     if sort_by:
         params["sort_by"] = sort_by
     if sort_order:
         params["sort_order"] = sort_order
     if limit is not None:
-        params["limit"] = min(limit, 100)  # Enforce max limit
+        limit_val = int(limit) if isinstance(limit, str) else limit
+        params["limit"] = min(limit_val, 100)  # Enforce max limit
     if offset is not None:
-        params["offset"] = offset
+        params["offset"] = int(offset) if isinstance(offset, str) else offset
 
     headers = {
-        "Authorization": f"Bearer {settings.healthion_api_access_token.get_secret_value()}",
+        # "Authorization": f"Bearer {settings.healthion_api_access_token.get_secret_value()}",
         "Content-Type": "application/json",
     }
+
+    token = get_access_token()
+    if not token:
+        raise ValueError("No access token found")
+    headers["Authorization"] = f"Bearer {token.token}"
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url, params=params, headers=headers)

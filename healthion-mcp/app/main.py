@@ -1,20 +1,23 @@
-import sys
 from logging import INFO, basicConfig
-from pathlib import Path
 
 from fastmcp import FastMCP
-
-# Add the parent directory to the path so we can import from app
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from fastmcp.server.auth.providers.auth0 import Auth0Provider
 
 from app.config import settings
 from app.mcp import mcp_router
 
 basicConfig(level=INFO, format="[%(asctime)s - %(name)s] (%(levelname)s) %(message)s")
 
+auth = Auth0Provider(
+    config_url=settings.auth0_config_url,
+    client_id=settings.auth0_client_id,
+    client_secret=settings.auth0_client_secret.get_secret_value(),
+    audience=settings.auth0_audience,
+    base_url=settings.base_url,
+    redirect_path=settings.auth0_redirect_path,
+)
 
-
-mcp = FastMCP(name=settings.mcp_server_name)
+mcp = FastMCP(name=settings.mcp_server_name, auth=auth)
 
 
 mcp.mount(mcp_router)
