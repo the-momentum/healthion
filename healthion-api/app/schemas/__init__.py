@@ -14,6 +14,14 @@ from .workout import (
     HumidityValue,
     DateRange
 )
+from .new_workout import (
+    WorkoutCreate as NewWorkoutCreate,
+    WorkoutUpdate as NewWorkoutUpdate,
+    WorkoutResponse as NewWorkoutResponse,
+    WorkoutIn as NewWorkoutIn,
+    WorkoutJSON as NewWorkoutJSON,
+    RootJSON as NewRootJSON,
+)
 from .heart_rate import (
     HeartRateDataCreate,
     HeartRateDataUpdate,
@@ -60,6 +68,13 @@ __all__ = [
     "TemperatureValue",
     "HumidityValue",
     "DateRange",
+
+    "NewWorkoutCreate",
+    "NewWorkoutUpdate",
+    "NewWorkoutResponse",
+    "NewWorkoutIn",
+    "NewRootJSON",
+    "NewWorkoutJSON",
     
     # Heart rate schemas
     "HeartRateDataCreate",

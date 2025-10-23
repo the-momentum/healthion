@@ -5,6 +5,7 @@ from app.mappings import (
     PrimaryKey,
     FKUser,
     ManyToOne,
+    OneToMany,
     datetime_tz,
     numeric_15_5,
     str_10,
@@ -25,4 +26,4 @@ class Record(BaseDbModel):
     value: Mapped[numeric_15_5]
 
     user: Mapped[ManyToOne["User"]]
-    metadata: Mapped[ManyToOne["MetadataEntry"]]
+    metadataEntries: Mapped[OneToMany["MetadataEntry"]]

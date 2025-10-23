@@ -4,6 +4,7 @@ from app.database import BaseDbModel
 from app.mappings import (
     PrimaryKey,
     FKUser,
+    FKNewWorkout,
     ManyToOne,
     datetime_tz,
     numeric_10_2,
@@ -15,6 +16,7 @@ from app.mappings import (
 class WorkoutStatistic(BaseDbModel):
     id: Mapped[PrimaryKey[int]]
     user_id: Mapped[FKUser]
+    workout_id: Mapped[FKNewWorkout]
 
     type: Mapped[str_50]
     startDate: Mapped[datetime_tz]
@@ -26,4 +28,4 @@ class WorkoutStatistic(BaseDbModel):
     unit: Mapped[str_10]
 
     user: Mapped[ManyToOne["User"]]
-    workout: Mapped[ManyToOne["XMLWorkout"]]
+    workout: Mapped[ManyToOne["NewWorkout"]]
