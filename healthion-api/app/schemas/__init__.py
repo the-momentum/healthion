@@ -22,6 +22,13 @@ from .new_workout import (
     WorkoutJSON as NewWorkoutJSON,
     RootJSON as NewRootJSON,
 )
+from .workout_statistics import (
+    WorkoutStatisticCreate,
+    WorkoutStatisticUpdate,
+    WorkoutStatisticJSON,
+    WorkoutStatisticResponse,
+    WorkoutStatisticIn,
+)
 from .heart_rate import (
     HeartRateDataCreate,
     HeartRateDataUpdate,
@@ -75,6 +82,12 @@ __all__ = [
     "NewWorkoutIn",
     "NewRootJSON",
     "NewWorkoutJSON",
+
+    "WorkoutStatisticCreate",
+    "WorkoutStatisticUpdate",
+    "WorkoutStatisticJSON",
+    "WorkoutStatisticResponse",
+    "WorkoutStatisticIn",
     
     # Heart rate schemas
     "HeartRateDataCreate",

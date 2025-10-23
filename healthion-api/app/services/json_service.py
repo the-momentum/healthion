@@ -6,12 +6,15 @@ from logging import Logger, getLogger
 
 from app.database import DbSession
 from app.services.new_workout_service import workout_service
+from app.services.workout_statistic_service import workout_statistic_service
 from app.utils.exceptions import handle_exceptions
 from app.schemas import (
     NewRootJSON,
     NewWorkoutJSON,
     NewWorkoutIn,
     NewWorkoutCreate,
+    WorkoutStatisticCreate,
+    WorkoutStatisticIn,
     UploadDataResponse,
 )
 
@@ -22,8 +25,9 @@ class JSONService:
     def __init__(self, log: Logger, **kwargs):
         self.log = log
         self.workout_service = workout_service
+        self.workout_statistic_service = workout_statistic_service
 
-    def _build_import_bundles(self, raw: dict) -> Iterable[NewWorkoutIn]:
+    def _build_import_bundles(self, raw: dict) -> Iterable[tuple[NewWorkoutIn, list[WorkoutStatisticIn]]]:
         """
         Given the parsed JSON dict from HealthAutoExport, yield ImportBundle(s)
         ready to insert into your ORM session.
@@ -47,18 +51,39 @@ class JSONService:
                 duration=Decimal(str(duration)),
                 durationUnit="min",
                 sourceName=wjson.sourceName,
-
             )
 
-            yield workout_row
+            # Handle workout statistics
+            workout_statistics = []
+            if hasattr(wjson, 'workoutStatistics') and wjson.workoutStatistics:
+                for stat in wjson.workoutStatistics:
+                    stat_in = WorkoutStatisticIn(
+                        type=stat.type,
+                        value=stat.value,
+                        unit=stat.unit
+                    )
+                    workout_statistics.append(stat_in)
+
+            yield workout_row, workout_statistics
 
     def load_data(self, db_session: DbSession, raw: dict, user_id: str = None) -> bool:
-        for bundle in self._build_import_bundles(raw):
-            workout_data = bundle.model_dump()
+        for workout_row, workout_statistics in self._build_import_bundles(raw):
+            workout_data = workout_row.model_dump()
             if user_id:
                 workout_data['user_id'] = UUID(user_id)
             workout_create = NewWorkoutCreate(**workout_data)
-            self.workout_service.create(db_session, workout_create)
+            created_workout = self.workout_service.create(db_session, workout_create)
+            
+            # Create workout statistics
+            for stat_in in workout_statistics:
+                stat_create = WorkoutStatisticCreate(
+                    user_id=created_workout.user_id,
+                    workout_id=created_workout.id,
+                    type=stat_in.type,
+                    value=stat_in.value,
+                    unit=stat_in.unit
+                )
+                self.workout_statistic_service.create(db_session, stat_create)
 
         return True
 

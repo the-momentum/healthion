@@ -19,12 +19,7 @@ class WorkoutStatistic(BaseDbModel):
     workout_id: Mapped[FKNewWorkout]
 
     type: Mapped[str_50]
-    startDate: Mapped[datetime_tz]
-    endDate: Mapped[datetime_tz]
-    sum: Mapped[numeric_10_2 | None]
-    average: Mapped[numeric_10_2 | None]
-    maximum: Mapped[numeric_10_2 | None]
-    minimum: Mapped[numeric_10_2 | None]
+    value: Mapped[numeric_10_2]
     unit: Mapped[str_10]
 
     user: Mapped[ManyToOne["User"]]

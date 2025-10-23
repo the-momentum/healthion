@@ -7,6 +7,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
+from app.schemas.workout_statistics import WorkoutStatisticIn
+
 class WorkoutResponse(BaseModel):
     """Individual workout response model."""
 
@@ -49,6 +51,7 @@ class WorkoutIn(BaseModel):
     duration: Decimal
     durationUnit: str
     sourceName: str | None = None
+    workoutStatistics: list[WorkoutStatisticIn] | None = None
 
 class WorkoutJSON(BaseModel):
     id: str | None = None
@@ -57,6 +60,7 @@ class WorkoutJSON(BaseModel):
     startDate: datetime
     endDate: datetime
     sourceName: str | None = None
+    workoutStatistics: list[WorkoutStatisticIn] | None = None
 
 
 class RootJSON(BaseModel):
