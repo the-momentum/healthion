@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 from decimal import Decimal
 from uuid import UUID, uuid4
 from typing import Iterable
@@ -9,10 +8,8 @@ from app.database import DbSession
 from app.services.new_workout_service import workout_service
 from app.utils.exceptions import handle_exceptions
 from app.schemas import (
-    # ImportBundle,
     NewRootJSON,
     NewWorkoutJSON,
-    QuantityJSON,
     NewWorkoutIn,
     NewWorkoutCreate,
     UploadDataResponse,
@@ -25,22 +22,6 @@ class JSONService:
     def __init__(self, log: Logger, **kwargs):
         self.log = log
         self.workout_service = workout_service
-
-    def _dt(self, s: str) -> datetime:
-        s = s.replace(" +", "+").replace(" ", "T", 1)
-        if len(s) >= 5 and (s[-5] in {"+", "-"} and s[-3] != ":"):
-            s = f"{s[:-2]}:{s[-2:]}"
-        return datetime.fromisoformat(s)
-
-    def _dec(self, x: float | int | None) -> Decimal | None:
-        return None if x is None else Decimal(str(x))
-
-    def _qty_pair(
-            self, q: QuantityJSON | None
-    ) -> tuple[Decimal | None, str | None]:
-        if q is None:
-            return None, None
-        return self._dec(q.qty), q.units
 
     def _build_import_bundles(self, raw: dict) -> Iterable[NewWorkoutIn]:
         """

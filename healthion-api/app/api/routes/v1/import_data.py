@@ -32,92 +32,25 @@ async def import_data(
     return await import_service.import_data_from_request(db, content_str, content_type, user_id)
 
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-
-DATABASE_URL = "postgresql://healthion:healthion@db:5432/healthion"
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
 @router.post("/apple/import/healthion")
-async def import_data(
-        request: Request
+async def import_data_healthion(
+        request: Request,
+        db: DbSession,
+        user_id: str = Depends(get_current_user_id)
 ) -> UploadDataResponse:
     """Import health data from file upload or JSON."""
-    db = SessionLocal()
-    try:
-        content_type = request.headers.get("content-type", "")
-        if "multipart/form-data" in content_type:
-            form = await request.form()
-            file = form.get("file")
-            if not file:
-                return UploadDataResponse(response="No file found")
-            content_str = await file.read()
-            content_str = content_str.decode("utf-8")
-        else:
-            body = await request.body()
-            content_str = body.decode("utf-8")
+    content_type = request.headers.get("content-type", "")
 
-        result = await json_import_service.import_data_from_request(db, content_str, content_type,
-                                                                    user_id=None)  # <-- HERE
-        db.commit()
-        return result
-    except Exception as e:
-        db.rollback()
-        raise
-    finally:
-        db.close()
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        file = form.get("file")
+        if not file:
+            return UploadDataResponse(response="No file found")
 
-# @router.post("/import/kamil-json")
-# async def import_data(
-#         request: Request
-# ) -> UploadDataResponse:
-#     """Import health data from file upload or JSON."""
-#     db = SessionLocal()
-#     try:
-#         content_type = request.headers.get("content-type", "")
-#         if "multipart/form-data" in content_type:
-#             form = await request.form()
-#             file = form.get("file")
-#             if not file:
-#                 return UploadDataResponse(response="No file found")
-#             content_str = await file.read()
-#             content_str = content_str.decode("utf-8")
-#         else:
-#             body = await request.body()
-#             content_str = body.decode("utf-8")
-#
-#         user_id = "local_user"  # Use a default user ID
-#         result = await json_import_service.import_data_from_request(db, content_str, content_type, user_id)
-#         db.commit()
-#         return result
-#     finally:
-#         db.close()
+        content_str = await file.read()
+        content_str = content_str.decode("utf-8")
+    else:
+        body = await request.body()
+        content_str = body.decode("utf-8")
 
-
-# @router.post("/import/kamil-json")
-# async def import_data(
-#         request: Request,
-#         db: DbSession,
-#         user_id: str = Depends(get_current_user_id)
-# ) -> UploadDataResponse:
-#     """Import health data from file upload or JSON."""
-#     content_type = request.headers.get("content-type", "")
-#
-#     if "multipart/form-data" in content_type:
-#         form = await request.form()
-#         file = form.get("file")
-#         if not file:
-#             return UploadDataResponse(response="No file found")
-#
-#         content_str = await file.read()
-#         content_str = content_str.decode("utf-8")
-#     else:
-#         body = await request.body()
-#         content_str = body.decode("utf-8")
-#
-#     return await json_import_service.import_data_from_request(db, content_str, content_type, user_id)
-#
-
-
+    return await json_import_service.import_data_from_request(db, content_str, content_type, user_id)
