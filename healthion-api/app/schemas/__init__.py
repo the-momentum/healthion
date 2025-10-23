@@ -21,6 +21,7 @@ from .new_workout import (
     WorkoutIn as NewWorkoutIn,
     WorkoutJSON as NewWorkoutJSON,
     RootJSON as NewRootJSON,
+    NewWorkoutJSON,
 )
 from .workout_statistics import (
     WorkoutStatisticCreate,

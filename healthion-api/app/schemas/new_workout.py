@@ -65,3 +65,14 @@ class WorkoutJSON(BaseModel):
 
 class RootJSON(BaseModel):
     data: dict[str, Any]
+
+
+# New JSON import schemas for the new format
+class NewWorkoutJSON(BaseModel):
+    """Schema for parsing NewWorkout from JSON import."""
+    uuid: int | None = None
+    type: str
+    startDate: datetime
+    endDate: datetime
+    sourceName: str
+    workoutStatistics: list[WorkoutStatisticIn] | None = None
