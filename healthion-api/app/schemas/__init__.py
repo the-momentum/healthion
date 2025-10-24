@@ -31,7 +31,7 @@ from .apple.healthkit.workout_import import (
     RootJSON as HKRootJSON,
     NewWorkoutJSON as HKNewWorkoutJSON,
 )
-from .apple.healthkit.workout_statistics import (
+from .apple.workout_statistics import (
     WorkoutStatisticCreate,
     WorkoutStatisticUpdate,
     WorkoutStatisticJSON,

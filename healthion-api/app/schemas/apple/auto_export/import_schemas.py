@@ -6,6 +6,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.apple.workout_statistics import WorkoutStatisticIn
+
 
 class WorkoutIn(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -75,6 +77,7 @@ class ImportBundle(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     workout: WorkoutIn
+    workout_statistics: list[WorkoutStatisticIn] = []
     heart_rate_data: list[HeartRateDataIn] = []
     heart_rate_recovery: list[HeartRateRecoveryIn] = []
     active_energy: list[ActiveEnergyIn] = []

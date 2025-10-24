@@ -7,20 +7,23 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.apple.healthkit.workout_statistics import WorkoutStatisticIn
+from app.schemas.apple.workout_statistics import WorkoutStatisticIn
 
-
-class WorkoutIn(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: UUID
-    user_id: str | None = None
+class WorkoutBase(BaseModel):
+    """Base schema for workout."""
     type: str | None = None
     startDate: datetime
     endDate: datetime
     duration: Decimal
     durationUnit: str
     sourceName: str | None = None
+
+
+class WorkoutIn(WorkoutBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    user_id: str | None = None
     workoutStatistics: list[WorkoutStatisticIn] | None = None
 
 
@@ -38,7 +41,6 @@ class RootJSON(BaseModel):
     data: dict[str, Any]
 
 
-# New JSON import schemas for the new format
 class NewWorkoutJSON(BaseModel):
     """Schema for parsing NewWorkout from JSON import."""
     uuid: int | None = None
