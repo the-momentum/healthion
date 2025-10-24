@@ -5,6 +5,9 @@ from .import_service import import_service
 from .auth_service import auth0_service
 from .workout_service import workout_service
 from .active_energy_service import active_energy_service
+from .json_service import import_service as json_import_service
+from .new_workout_service import workout_service as new_workout_service
+from .workout_statistic_service import workout_statistic_service
 
 __all__ = [
     "AppService",
@@ -14,4 +17,7 @@ __all__ = [
     "auth0_service",
     "workout_service",
     "active_energy_service",
+    "json_import_service",
+    "new_workout_service",
+    "workout_statistic_service",
 ]

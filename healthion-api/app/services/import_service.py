@@ -6,23 +6,15 @@ from typing import Iterable
 from logging import Logger, getLogger
 
 from app.database import DbSession
-from app.services.heart_rate_service import heart_rate_service
-from app.services.workout_service import workout_service
-from app.services.active_energy_service import active_energy_service
+from app.services.new_workout_service import workout_service
+from app.services.workout_statistic_service import workout_statistic_service
 from app.utils.exceptions import handle_exceptions
 from app.schemas import (
-    ImportBundle,
-    RootJSON,
-    WorkoutJSON,
-    HeartRateDataIn,
-    HeartRateRecoveryIn,
-    ActiveEnergyIn,
-    QuantityJSON,
-    WorkoutIn,
-    WorkoutCreate,
-    HeartRateDataCreate,
-    HeartRateRecoveryCreate,
-    ActiveEnergyCreate,
+    NewWorkoutJSON,
+    NewWorkoutIn,
+    NewWorkoutCreate,
+    WorkoutStatisticCreate,
+    WorkoutStatisticIn,
     UploadDataResponse,
 )
 
@@ -33,9 +25,7 @@ class ImportService:
     def __init__(self, log: Logger, **kwargs):
         self.log = log
         self.workout_service = workout_service
-        self.heart_rate_data_service = heart_rate_service.heart_rate_data_service
-        self.heart_rate_recovery_service = heart_rate_service.heart_rate_recovery_service
-        self.active_energy_service = active_energy_service
+        self.workout_statistic_service = workout_statistic_service
 
     def _dt(self, s: str) -> datetime:
         s = s.replace(" +", "+").replace(" ", "T", 1)
@@ -46,129 +36,142 @@ class ImportService:
     def _dec(self, x: float | int | None) -> Decimal | None:
         return None if x is None else Decimal(str(x))
 
-    def _qty_pair(
-        self, q: QuantityJSON | None
-    ) -> tuple[Decimal | None, str | None]:
-        if q is None:
-            return None, None
-        return self._dec(q.qty), q.units
 
-    def _build_import_bundles(self, raw: dict) -> Iterable[ImportBundle]:
+    def _convert_old_to_new_format(self, raw: dict) -> tuple[NewWorkoutIn, list[WorkoutStatisticIn]]:
         """
-        Given the parsed JSON dict from HealthAutoExport, yield ImportBundle(s)
-        ready to insert into your ORM session.
+        Convert old format data to new format structure.
         """
-        root = RootJSON(**raw)
-        workouts_raw = root.data.get("workouts", [])
-        for w in workouts_raw:
-            wjson = WorkoutJSON(**w)
+        # Always generate a new UUID for workouts to avoid conflicts between users
+        wid = uuid4()
+        
+        # Parse dates
+        start_date = self._dt(raw['start'])
+        end_date = self._dt(raw['end'])
+        
+        # Calculate duration in minutes
+        duration_minutes = (end_date - start_date).total_seconds() / 60
+        
+        # Create workout statistics from old format data
+        statistics = []
+        
+        # Active energy burned
+        if 'activeEnergyBurned' in raw and raw['activeEnergyBurned']:
+            ae_data = raw['activeEnergyBurned']
+            statistics.append(WorkoutStatisticIn(
+                type="totalEnergyBurned",
+                value=ae_data.get('qty', 0),
+                unit=ae_data.get('units', 'kcal')
+            ))
+        
+        # Distance (if available)
+        if 'distance' in raw and raw['distance']:
+            dist_data = raw['distance']
+            statistics.append(WorkoutStatisticIn(
+                type="totalDistance",
+                value=dist_data.get('qty', 0),
+                unit=dist_data.get('units', 'm')
+            ))
+        
+        # Intensity (if available)
+        if 'intensity' in raw and raw['intensity']:
+            intensity_data = raw['intensity']
+            statistics.append(WorkoutStatisticIn(
+                type="averageIntensity",
+                value=intensity_data.get('qty', 0),
+                unit=intensity_data.get('units', 'kcal/hr·kg')
+            ))
+        
+        # Temperature (if available)
+        if 'temperature' in raw and raw['temperature']:
+            temp_data = raw['temperature']
+            statistics.append(WorkoutStatisticIn(
+                type="environmentalTemperature",
+                value=temp_data.get('qty', 0),
+                unit=temp_data.get('units', 'degC')
+            ))
+        
+        # Humidity (if available)
+        if 'humidity' in raw and raw['humidity']:
+            humidity_data = raw['humidity']
+            statistics.append(WorkoutStatisticIn(
+                type="environmentalHumidity",
+                value=humidity_data.get('qty', 0),
+                unit=humidity_data.get('units', '%')
+            ))
+        
+        # Use name as workout type, trimmed of spaces
+        workout_type = raw.get('name', 'Unknown Workout').strip()
+        
+        # Create workout data
+        workout_data = NewWorkoutIn(
+            id=wid,
+            type=workout_type,
+            startDate=start_date,
+            endDate=end_date,
+            duration=self._dec(duration_minutes),
+            durationUnit="min",
+            sourceName=raw.get('name', 'Unknown Workout'),
+            workoutStatistics=statistics
+        )
+        
+        return workout_data, statistics
 
-            # Always generate a new UUID for workouts to avoid conflicts between users
-            wid = uuid4()
+    def _build_new_workout_data(self, raw: dict) -> tuple[NewWorkoutIn, list[WorkoutStatisticIn]]:
+        """
+        Parse the new JSON format and return workout and statistics data.
+        """
+        # Parse the new JSON format directly
+        workout_json = NewWorkoutJSON(**raw)
+        
+        # Always generate a new UUID for workouts to avoid conflicts between users
+        wid = uuid4()
+        
+        # Calculate duration in minutes
+        duration_minutes = (workout_json.endDate - workout_json.startDate).total_seconds() / 60
+        
+        workout_data = NewWorkoutIn(
+            id=wid,
+            type=workout_json.type,
+            startDate=workout_json.startDate,
+            endDate=workout_json.endDate,
+            duration=self._dec(duration_minutes),
+            durationUnit="min",
+            sourceName=workout_json.sourceName,
+            workoutStatistics=workout_json.workoutStatistics or []
+        )
+        
+        return workout_data, workout_json.workoutStatistics or []
 
-            active_energy_burned_qty, active_energy_burned_units = self._qty_pair(
-                wjson.activeEnergyBurned
-            )
-            distance_qty, distance_units = self._qty_pair(wjson.distance)
-            intensity_qty, intensity_units = self._qty_pair(wjson.intensity)
-            humidity_qty, humidity_units = self._qty_pair(wjson.humidity)
-            temperature_qty, temperature_units = self._qty_pair(wjson.temperature)
 
-            workout_row = WorkoutIn(
-                id=wid,
-                name=wjson.name,
-                location=wjson.location,
-                start=self._dt(wjson.start),
-                end=self._dt(wjson.end),
-                duration=self._dec(wjson.duration),
-                active_energy_burned_qty=active_energy_burned_qty,
-                active_energy_burned_units=active_energy_burned_units,
-                distance_qty=distance_qty,
-                distance_units=distance_units,
-                intensity_qty=intensity_qty,
-                intensity_units=intensity_units,
-                humidity_qty=humidity_qty,
-                humidity_units=humidity_units,
-                temperature_qty=temperature_qty,
-                temperature_units=temperature_units,
-            )
-
-            hr_data_rows: list[HeartRateDataIn] = []
-            for e in wjson.heartRateData or []:
-                hr_data_rows.append(
-                    HeartRateDataIn(
-                        workout_id=wid,
-                        date=self._dt(e.date),
-                        source=e.source,
-                        units=e.units,
-                        avg=self._dec(e.avg),
-                        min=self._dec(e.min),
-                        max=self._dec(e.max),
-                    )
-                )
-
-            hr_recovery_rows: list[HeartRateRecoveryIn] = []
-            for e in wjson.heartRateRecovery or []:
-                hr_recovery_rows.append(
-                    HeartRateRecoveryIn(
-                        workout_id=wid,
-                        date=self._dt(e.date),
-                        source=e.source,
-                        units=e.units,
-                        avg=self._dec(e.avg),
-                        min=self._dec(e.min),
-                        max=self._dec(e.max),
-                    )
-                )
-
-            ae_rows: list[ActiveEnergyIn] = []
-            for e in wjson.activeEnergy or []:
-                ae_rows.append(
-                    ActiveEnergyIn(
-                        workout_id=wid,
-                        date=self._dt(e.date),
-                        source=e.source,
-                        units=e.units,
-                        qty=self._dec(e.qty),
-                    )
-                )
-
-            yield ImportBundle(
-                workout=workout_row,
-                heart_rate_data=hr_data_rows,
-                heart_rate_recovery=hr_recovery_rows,
-                active_energy=ae_rows,
-            )
+    def _is_new_format(self, raw: dict) -> bool:
+        """Check if the data is in new format."""
+        return all(key in raw for key in ['type', 'startDate', 'endDate', 'sourceName'])
 
     def load_data(self, db_session: DbSession, raw: dict, user_id: str = None) -> bool:
-        for bundle in self._build_import_bundles(raw):
-            workout_data = bundle.workout.model_dump()
+        # Check format and convert if necessary
+        if self._is_new_format(raw):
+            # Process new format directly
+            workout_data, statistics_data = self._build_new_workout_data(raw)
+        else:
+            # Convert old format to new format
+            workout_data, statistics_data = self._convert_old_to_new_format(raw)
+        
+        # Create workout
+        workout_dict = workout_data.model_dump()
+        if user_id:
+            workout_dict['user_id'] = UUID(user_id)
+        workout_create = NewWorkoutCreate(**workout_dict)
+        self.workout_service.create(db_session, workout_create)
+
+        # Create workout statistics
+        for stat in statistics_data:
+            stat_data = stat.model_dump()
             if user_id:
-                workout_data['user_id'] = UUID(user_id)
-            workout_create = WorkoutCreate(**workout_data)
-            self.workout_service.create(db_session, workout_create)
-
-            for row in bundle.heart_rate_data:
-                hr_data = row.model_dump()
-                if user_id:
-                    hr_data['user_id'] = UUID(user_id)
-                hr_create = HeartRateDataCreate(**hr_data)
-                self.heart_rate_data_service.create(db_session, hr_create)
-
-            for row in bundle.heart_rate_recovery:
-                hr_recovery_data = row.model_dump()
-                if user_id:
-                    hr_recovery_data['user_id'] = UUID(user_id)
-                hr_recovery_create = HeartRateRecoveryCreate(**hr_recovery_data)
-                self.heart_rate_recovery_service.create(db_session, hr_recovery_create)
-
-            for row in bundle.active_energy:
-                ae_data = row.model_dump()
-                if user_id:
-                    ae_data['user_id'] = UUID(user_id)
-                ae_create = ActiveEnergyCreate(**ae_data)
-                self.active_energy_service.create(db_session, ae_create)
-
+                stat_data['user_id'] = UUID(user_id)
+                stat_data['workout_id'] = workout_data.id
+            stat_create = WorkoutStatisticCreate(**stat_data)
+            self.workout_statistic_service.create(db_session, stat_create)
+            
         return True
 
     @handle_exceptions
