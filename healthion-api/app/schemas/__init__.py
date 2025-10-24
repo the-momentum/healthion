@@ -1,36 +1,44 @@
 from .filter_params import FilterParams
-from .workout import (
-    WorkoutCreate, 
-    WorkoutUpdate, 
-    WorkoutQueryParams,
-    WorkoutResponse,
-    WorkoutListResponse,
-    WorkoutSummary,
-    WorkoutMeta,
+from .apple.auto_export.workout_queries import WorkoutQueryParams
+from .apple.auto_export.workout_values import (
     DistanceValue,
-    ActiveEnergyValue,
-    IntensityValue,
-    TemperatureValue,
-    HumidityValue,
+    ActiveEnergyValue as AEActiveEnergyValue,
+    IntensityValue as AEIntensityValue,
+    TemperatureValue as AETemperatureValue,
+    HumidityValue as AEHumidityValue,
+)
+from .apple.auto_export.workout_responses import (
+    WorkoutResponse as AEWorkoutResponse,
+    WorkoutListResponse,
+    WorkoutSummary as AESummary,
+    WorkoutMeta as AEMeta,
     DateRange
 )
-from .new_workout import (
-    WorkoutCreate as NewWorkoutCreate,
-    WorkoutUpdate as NewWorkoutUpdate,
-    WorkoutResponse as NewWorkoutResponse,
-    WorkoutIn as NewWorkoutIn,
-    WorkoutJSON as NewWorkoutJSON,
-    RootJSON as NewRootJSON,
-    NewWorkoutJSON,
+from .apple.auto_export.workout_crud import (
+    WorkoutCreate as AEWorkoutCreate,
+    WorkoutUpdate as AEWorkoutUpdate,
 )
-from .workout_statistics import (
+from .apple.healthkit.workout_crud import (
+    WorkoutCreate as HKWorkoutCreate,
+    WorkoutUpdate as HKWorkoutUpdate,
+)
+from .apple.healthkit.workout_responses import (
+    WorkoutResponse as HKWorkoutResponse,
+)
+from .apple.healthkit.workout_import import (
+    WorkoutIn as HKWorkoutIn,
+    WorkoutJSON as HKWorkoutJSON,
+    RootJSON as HKRootJSON,
+    NewWorkoutJSON as HKNewWorkoutJSON,
+)
+from .apple.healthkit.workout_statistics import (
     WorkoutStatisticCreate,
     WorkoutStatisticUpdate,
     WorkoutStatisticJSON,
     WorkoutStatisticResponse,
     WorkoutStatisticIn,
 )
-from .heart_rate import (
+from .apple.auto_export.heart_rate import (
     HeartRateDataCreate,
     HeartRateDataUpdate,
     HeartRateRecoveryCreate,
@@ -43,19 +51,21 @@ from .heart_rate import (
     HeartRateMeta,
     HeartRateValue
 )
-from .active_energy import ActiveEnergyCreate, ActiveEnergyUpdate
+from .apple.auto_export.active_energy import ActiveEnergyCreate, ActiveEnergyUpdate
 from .user import UserInfo, UserResponse, UserCreate, UserUpdate
-from .health_data import (
+from .apple.auto_export.import_schemas import (
     WorkoutIn,
     HeartRateDataIn,
     HeartRateRecoveryIn,
     ActiveEnergyIn,
+    ImportBundle
+)
+from .apple.auto_export.json_schemas import (
     QuantityJSON,
     HeartRateEntryJSON,
     ActiveEnergyEntryJSON,
     WorkoutJSON,
-    RootJSON,
-    ImportBundle
+    RootJSON
 )
 from .error_codes import ErrorCode
 from .response import UploadDataResponse
@@ -63,26 +73,27 @@ from .response import UploadDataResponse
 __all__ = [
     "FilterParams",
     
-    "WorkoutCreate",
-    "WorkoutUpdate", 
+    "AEWorkoutCreate",
+    "AEWorkoutUpdate", 
     "WorkoutQueryParams",
-    "WorkoutResponse",
+    "AEWorkoutResponse",
     "WorkoutListResponse",
-    "WorkoutSummary",
-    "WorkoutMeta",
+    "AESummary",
+    "AEMeta",
     "DistanceValue",
-    "ActiveEnergyValue",
-    "IntensityValue",
-    "TemperatureValue",
-    "HumidityValue",
+    "AEActiveEnergyValue",
+    "AEIntensityValue",
+    "AETemperatureValue",
+    "AEHumidityValue",
     "DateRange",
 
-    "NewWorkoutCreate",
-    "NewWorkoutUpdate",
-    "NewWorkoutResponse",
-    "NewWorkoutIn",
-    "NewRootJSON",
-    "NewWorkoutJSON",
+    "HKWorkoutCreate",
+    "HKWorkoutUpdate",
+    "HKWorkoutResponse",
+    "HKWorkoutIn",
+    "HKRootJSON",
+    "HKWorkoutJSON",
+    "HKNewWorkoutJSON",
 
     "WorkoutStatisticCreate",
     "WorkoutStatisticUpdate",
