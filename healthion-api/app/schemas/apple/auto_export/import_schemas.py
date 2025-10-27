@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from app.schemas.apple.workout_statistics import WorkoutStatisticIn
+from app.schemas.apple.healthkit.workout_import import WorkoutIn as HKWorkoutIn
 
 
 class WorkoutIn(BaseModel):
@@ -69,6 +70,7 @@ class ImportBundle(BaseModel):
     """
     Container returned by the factory:
     - workout: WorkoutIn
+    - workout_statistics: list[WorkoutStatisticIn]
     - heart_rate_data: list[HeartRateDataIn]
     - heart_rate_recovery: list[HeartRateRecoveryIn]
     - active_energy: list[ActiveEnergyIn]
@@ -76,7 +78,7 @@ class ImportBundle(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    workout: WorkoutIn
+    workout: HKWorkoutIn
     workout_statistics: list[WorkoutStatisticIn] = []
     heart_rate_data: list[HeartRateDataIn] = []
     heart_rate_recovery: list[HeartRateRecoveryIn] = []

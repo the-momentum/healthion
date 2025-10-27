@@ -8,25 +8,38 @@ from logging import Logger, getLogger
 from app.database import DbSession
 from app.services.new_workout_service import workout_service
 from app.services.workout_statistic_service import workout_statistic_service
+from app.services.active_energy_service import active_energy_service
+from app.services.heart_rate_service import heart_rate_service
 from app.utils.exceptions import handle_exceptions
 from app.schemas import (
+    WorkoutJSON,
+    HeartRateDataIn,
+    HeartRateRecoveryIn,
+    ActiveEnergyIn,
+    ImportBundle,
     RootJSON,
-    NewWorkoutJSON,
-    NewWorkoutIn,
-    NewWorkoutCreate,
-    WorkoutStatisticCreate,
     WorkoutStatisticIn,
+    WorkoutStatisticCreate,
+    HKWorkoutIn,
+    HKWorkoutCreate,
     UploadDataResponse,
+    HeartRateDataCreate,
+    HeartRateRecoveryCreate,
+    ActiveEnergyCreate,
 )
 
-APPLE_DT_FORMAT = "%Y-%m-%d %H:%M:%S %z"
 
+# APPLE_DT_FORMAT = "%Y-%m-%d %H:%M:%S %z"
 
 class ImportService:
     def __init__(self, log: Logger, **kwargs):
         self.log = log
         self.workout_service = workout_service
         self.workout_statistic_service = workout_statistic_service
+        self.active_energy_service = active_energy_service
+        self.heart_rate_data_service = heart_rate_service.heart_rate_data_service
+        self.heart_rate_recovery_service = heart_rate_service.heart_rate_recovery_service
+        self.active_energy_service = active_energy_service
 
     def _dt(self, s: str) -> datetime:
         s = s.replace(" +", "+").replace(" ", "T", 1)
@@ -38,7 +51,7 @@ class ImportService:
         return None if x is None else Decimal(str(x))
 
 
-    def _get_workout_statistics(self, workout: NewWorkoutJSON) -> list[WorkoutStatisticIn]:
+    def _get_workout_statistics(self, workout: WorkoutJSON) -> list[WorkoutStatisticIn]:
         """
         Get workout statistics from workout JSON.
         """
@@ -85,9 +98,51 @@ class ImportService:
             ))
 
         return statistics
-        
 
-    def _build_import_bundles(self, raw: dict) -> Iterable[tuple[NewWorkoutIn, list[WorkoutStatisticIn]]]:
+    def _get_records(self, workout: WorkoutJSON, wid: UUID) -> tuple[list[HeartRateDataIn], list[HeartRateRecoveryIn], list[ActiveEnergyIn]]:
+        hr_data_rows: list[HeartRateDataIn] = []
+        for e in workout.heartRateData or []:
+            hr_data_rows.append(
+                HeartRateDataIn(
+                    workout_id=wid,
+                    date=self._dt(e.date),
+                    source=e.source,
+                    units=e.units,
+                    avg=self._dec(e.avg),
+                    min=self._dec(e.min),
+                    max=self._dec(e.max),
+                )
+            )
+
+        hr_recovery_rows: list[HeartRateRecoveryIn] = []
+        for e in workout.heartRateRecovery or []:
+            hr_recovery_rows.append(
+                HeartRateRecoveryIn(
+                    workout_id=wid,
+                    date=self._dt(e.date),
+                    source=e.source,
+                    units=e.units,
+                    avg=self._dec(e.avg),
+                    min=self._dec(e.min),
+                    max=self._dec(e.max),
+                )
+            )
+
+        ae_rows: list[ActiveEnergyIn] = []
+        for e in workout.activeEnergy or []:
+            ae_rows.append(
+                ActiveEnergyIn(
+                    workout_id=wid,
+                    date=self._dt(e.date),
+                    source=e.source,
+                    units=e.units,
+                    qty=self._dec(e.qty),
+                )
+            )
+        
+        return hr_data_rows, hr_recovery_rows, ae_rows
+
+    def _build_import_bundles(self, raw: dict) -> Iterable[ImportBundle]:
         """
         Given the parsed JSON dict from HealthAutoExport, yield ImportBundles
         ready to insert the database.
@@ -96,51 +151,80 @@ class ImportService:
         workouts_raw = root.data.get("workouts", [])
         
         for w in workouts_raw:
-            wjson = NewWorkoutJSON(**w)
+            wjson = WorkoutJSON(**w)
 
             wid = uuid4()
 
-            start_date = self._dt(wjson.startDate)
-            end_date = self._dt(wjson.endDate)
+            start_date = self._dt(wjson.start)
+            end_date = self._dt(wjson.end)
             duration = (end_date - start_date).total_seconds() / 60
             duration_unit = "min"
 
             workout_statistics = self._get_workout_statistics(wjson)
 
-            workout_type = raw.get('name', 'Unknown Workout')
+            workout_type = wjson.name or 'Unknown Workout'
 
-            workout_row = NewWorkoutIn(
+            workout_row = HKWorkoutIn(
                 id=wid,
                 type=workout_type,
                 startDate=start_date,
                 endDate=end_date,
                 duration=self._dec(duration),
                 durationUnit=duration_unit,
-                sourceName=wjson.sourceName,
+                sourceName="Auto Export",
                 workoutStatistics=workout_statistics
             )
 
-            
+            heart_rate_data, heart_rate_recovery, active_energy = self._get_records(wjson, wid)
 
-            yield workout_row, workout_statistics
+            yield ImportBundle(
+                workout=workout_row,
+                workout_statistics=workout_statistics,
+                heart_rate_data=heart_rate_data,
+                heart_rate_recovery=heart_rate_recovery,
+                active_energy=active_energy
+            )
 
 
     def load_data(self, db_session: DbSession, raw: dict, user_id: str = None) -> bool:
 
-        for workout_row, workout_statistics in self._build_import_bundles(raw):
-            workout_dict = workout_row.model_dump()
+        for bundle in self._build_import_bundles(raw):
+
+
+            workout_dict = bundle.workout.model_dump()
             if user_id:
                 workout_dict['user_id'] = UUID(user_id)
-            workout_create = NewWorkoutCreate(**workout_dict)
+            workout_create = HKWorkoutCreate(**workout_dict)
             self.workout_service.create(db_session, workout_create)
 
-            for stat in workout_statistics:
+            for stat in bundle.workout_statistics:
                 stat_dict = stat.model_dump()
                 if user_id:
                     stat_dict['user_id'] = UUID(user_id)
-                    stat_dict['workout_id'] = workout_row.id
+                    stat_dict['workout_id'] = bundle.workout.id
                 stat_create = WorkoutStatisticCreate(**stat_dict)
                 self.workout_statistic_service.create(db_session, stat_create)
+
+            for row in bundle.heart_rate_data:
+                hr_data = row.model_dump()
+                if user_id:
+                    hr_data['user_id'] = UUID(user_id)
+                hr_create = HeartRateDataCreate(**hr_data)
+                self.heart_rate_data_service.create(db_session, hr_create)
+
+            for row in bundle.heart_rate_recovery:
+                hr_recovery_data = row.model_dump()
+                if user_id:
+                    hr_recovery_data['user_id'] = UUID(user_id)
+                hr_recovery_create = HeartRateRecoveryCreate(**hr_recovery_data)
+                self.heart_rate_recovery_service.create(db_session, hr_recovery_create)
+
+            for row in bundle.active_energy:
+                ae_data = row.model_dump()
+                if user_id:
+                    ae_data['user_id'] = UUID(user_id)
+                ae_create = ActiveEnergyCreate(**ae_data)
+                self.active_energy_service.create(db_session, ae_create)
 
         return True
 
@@ -161,15 +245,15 @@ class ImportService:
                 data = self._parse_json_content(request_content)
             
             if not data:
-                return UploadDataResponse(response="No valid data found")
+                return UploadDataResponse(status_code=400, response="No valid data found")
             
             # Load data using provided database session
             self.load_data(db_session, data, user_id=user_id)
                 
         except Exception as e:
-            return UploadDataResponse(response=f"Import failed: {str(e)}")
+            return UploadDataResponse(status_code=400, response=f"Import failed: {str(e)}")
 
-        return UploadDataResponse(response="Import successful")
+        return UploadDataResponse(status_code=200, response="Import successful")
 
 
     def _parse_multipart_content(self, content: str) -> dict | None:

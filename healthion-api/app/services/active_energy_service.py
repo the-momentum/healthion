@@ -2,9 +2,9 @@ from logging import Logger, getLogger
 from uuid import UUID
 
 from app.database import DbSession
-from app.models.active_energy import ActiveEnergy
-from app.repositories.active_energy_repository import ActiveEnergyRepository
-from app.schemas.active_energy import ActiveEnergyCreate, ActiveEnergyUpdate
+from app.models import ActiveEnergy
+from app.repositories import ActiveEnergyRepository
+from app.schemas import ActiveEnergyCreate, ActiveEnergyUpdate
 from app.services.services import AppService
 from app.utils.exceptions import handle_exceptions
 

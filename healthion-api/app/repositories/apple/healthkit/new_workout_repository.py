@@ -3,10 +3,10 @@ from uuid import UUID
 from app.database import DbSession
 from app.models import NewWorkout
 from app.repositories import CrudRepository
-from app.schemas import WorkoutQueryParams, NewWorkoutCreate, NewWorkoutUpdate
+from app.schemas import WorkoutQueryParams, HKWorkoutCreate, HKWorkoutUpdate
 
 
-class WorkoutRepository(CrudRepository[NewWorkout, NewWorkoutCreate, NewWorkoutUpdate]):
+class WorkoutRepository(CrudRepository[NewWorkout, HKWorkoutCreate, HKWorkoutUpdate]):
     def __init__(self, model: type[NewWorkout]):
         super().__init__(model)
 

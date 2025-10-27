@@ -38,9 +38,6 @@ class Workout(BaseDbModel):
     temperature_units: Mapped[str_10 | None]
 
     user: Mapped[ManyToOne["User"]]
-    heart_rate_data: Mapped[OneToMany["HeartRateData"]]
-    heart_rate_recovery: Mapped[OneToMany["HeartRateRecovery"]]
-    active_energy: Mapped[OneToMany["ActiveEnergy"]]
 
 
 class NewWorkout(BaseDbModel):
@@ -59,6 +56,9 @@ class NewWorkout(BaseDbModel):
 
     # np. active_energy, heart_rate_data
     workout_statistics: Mapped[OneToMany["WorkoutStatistic"]]
+    heart_rate_data: Mapped[OneToMany["HeartRateData"]]
+    heart_rate_recovery: Mapped[OneToMany["HeartRateRecovery"]]
+    active_energy: Mapped[OneToMany["ActiveEnergy"]]
 
     # workout_entries: Mapped[OneToMany["WorkoutEntry"]] ??
     # workout_routes: Mapped[OneToMany["WorkoutRoute"]] ??

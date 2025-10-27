@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Mapped
+
 from app.database import BaseDbModel
 from app.mappings import (
     FKUser,
@@ -10,7 +11,8 @@ from app.mappings import (
     str_50,
 )
 
-class HeartRateData(BaseDbModel):
+
+class HeartRateRecovery(BaseDbModel):
     id: Mapped[PrimaryKey[int]]
     user_id: Mapped[FKUser]
     workout_id: Mapped[FKWorkout]
@@ -22,4 +24,4 @@ class HeartRateData(BaseDbModel):
     max: Mapped[numeric_10_3 | None]
 
     user: Mapped[ManyToOne["User"]]
-    workout: Mapped[ManyToOne["Workout"]]
+    workout: Mapped[ManyToOne["NewWorkout"]]

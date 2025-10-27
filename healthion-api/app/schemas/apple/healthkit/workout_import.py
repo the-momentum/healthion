@@ -6,6 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
+from pydantic_core.core_schema import str_schema
 
 from app.schemas.apple.workout_statistics import WorkoutStatisticIn
 
@@ -43,7 +44,7 @@ class RootJSON(BaseModel):
 
 class NewWorkoutJSON(BaseModel):
     """Schema for parsing NewWorkout from JSON import."""
-    uuid: int | None = None
+    user_id: str
     type: str
     startDate: datetime
     endDate: datetime
