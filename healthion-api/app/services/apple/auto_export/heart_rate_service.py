@@ -5,13 +5,13 @@ from datetime import datetime
 from app.database import DbSession
 from app.models import HeartRateData, HeartRateRecovery
 from app.schemas import (
-    HeartRateDataResponse,
-    HeartRateListResponse,
+    AEHeartRateDataResponse,
+    AEHeartRateListResponse,
     AEMeta,
-    HeartRateQueryParams,
-    HeartRateRecoveryResponse,
+    AEHeartRateQueryParams,
+    AEHeartRateRecoveryResponse,
     AESummary,
-    HeartRateValue,
+    AEHeartRateValue,
 )
 from .mixins.heart_rate_data_service import HeartRateDataService
 from .mixins.heart_rate_recovery_service import HeartRateRecoveryService
@@ -37,7 +37,7 @@ class HeartRateService:
     async def _get_complete_heart_rate_data(
         self, 
         db_session: DbSession, 
-        query_params: HeartRateQueryParams,
+        query_params: AEHeartRateQueryParams,
         user_id: str
     ) -> tuple[list[HeartRateData], list[HeartRateRecovery], dict, int, int]:
         """
@@ -61,9 +61,9 @@ class HeartRateService:
     async def build_heart_rate_full_data_response(
         self, 
         db_session: DbSession, 
-        query_params: HeartRateQueryParams,
+        query_params: AEHeartRateQueryParams,
         user_id: str
-    ) -> HeartRateListResponse:
+    ) -> AEHeartRateListResponse:
         """
         Get complete heart rate data formatted as API response.
         
@@ -76,14 +76,14 @@ class HeartRateService:
         # Convert heart rate data to response format
         heart_rate_responses = []
         for hr_data_item in hr_data:
-            heart_rate_response = HeartRateDataResponse(
+            heart_rate_response = AEHeartRateDataResponse(
                 id=hr_data_item.id,
                 workout_id=hr_data_item.workout_id,
                 date=hr_data_item.date.isoformat(),
                 source=hr_data_item.source,
                 units=hr_data_item.units,
                 avg=(
-                    HeartRateValue(
+                    AEHeartRateValue(
                         value=float(hr_data_item.avg or 0),
                         unit=hr_data_item.units or "bpm",
                     )
@@ -91,7 +91,7 @@ class HeartRateService:
                     else None
                 ),
                 min=(
-                    HeartRateValue(
+                    AEHeartRateValue(
                         value=float(hr_data_item.min or 0),
                         unit=hr_data_item.units or "bpm",
                     )
@@ -99,7 +99,7 @@ class HeartRateService:
                     else None
                 ),
                 max=(
-                    HeartRateValue(
+                    AEHeartRateValue(
                         value=float(hr_data_item.max or 0),
                         unit=hr_data_item.units or "bpm",
                     )
@@ -112,14 +112,14 @@ class HeartRateService:
         # Convert heart rate recovery data to response format
         heart_rate_recovery_responses = []
         for hr_recovery_item in recovery_data:
-            heart_rate_recovery_response = HeartRateRecoveryResponse(
+            heart_rate_recovery_response = AEHeartRateRecoveryResponse(
                 id=hr_recovery_item.id,
                 workout_id=hr_recovery_item.workout_id,
                 date=hr_recovery_item.date.isoformat(),
                 source=hr_recovery_item.source,
                 units=hr_recovery_item.units,
                 avg=(
-                    HeartRateValue(
+                    AEHeartRateValue(
                         value=float(hr_recovery_item.avg or 0),
                         unit=hr_recovery_item.units or "bpm",
                     )
@@ -127,7 +127,7 @@ class HeartRateService:
                     else None
                 ),
                 min=(
-                    HeartRateValue(
+                    AEHeartRateValue(
                         value=float(hr_recovery_item.min or 0),
                         unit=hr_recovery_item.units or "bpm",
                     )
@@ -135,7 +135,7 @@ class HeartRateService:
                     else None
                 ),
                 max=(
-                    HeartRateValue(
+                    AEHeartRateValue(
                         value=float(hr_recovery_item.max or 0),
                         unit=hr_recovery_item.units or "bpm",
                     )
@@ -159,7 +159,7 @@ class HeartRateService:
             },
         )
 
-        return HeartRateListResponse(
+        return AEHeartRateListResponse(
             data=heart_rate_responses,
             recovery_data=heart_rate_recovery_responses,
             summary=summary,

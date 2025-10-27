@@ -17,7 +17,7 @@ from app.mappings import (
     str_50,
 )
 
-class Workout(BaseDbModel):
+class OldWorkout(BaseDbModel):
     id: Mapped[PrimaryKey[UUID]]
     user_id: Mapped[FKUser]
     name: Mapped[str_255 | None]
@@ -40,7 +40,7 @@ class Workout(BaseDbModel):
     user: Mapped[ManyToOne["User"]]
 
 
-class NewWorkout(BaseDbModel):
+class Workout(BaseDbModel):
     id: Mapped[PrimaryKey[UUID]]
     user_id: Mapped[FKUser]
 

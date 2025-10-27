@@ -12,8 +12,8 @@ from app.schemas import (
     HKNewWorkoutJSON,
     HKWorkoutIn,
     HKWorkoutCreate,
-    WorkoutStatisticCreate,
-    WorkoutStatisticIn,
+    HKWorkoutStatisticCreate,
+    HKWorkoutStatisticIn,
     UploadDataResponse,
 )
 
@@ -26,7 +26,7 @@ class JSONService:
         self.workout_service = workout_service
         self.workout_statistic_service = workout_statistic_service
 
-    def _build_import_bundles(self, raw: dict) -> Iterable[tuple[HKWorkoutIn, list[WorkoutStatisticIn]]]:
+    def _build_import_bundles(self, raw: dict) -> Iterable[tuple[HKWorkoutIn, list[HKWorkoutStatisticIn]]]:
         """
         Given the parsed JSON dict from HealthAutoExport, yield ImportBundle(s)
         ready to insert into your ORM session.
@@ -56,7 +56,7 @@ class JSONService:
             workout_statistics = []
             if wjson.workoutStatistics is not None:
                 for stat in wjson.workoutStatistics:
-                    stat_in = WorkoutStatisticIn(
+                    stat_in = HKWorkoutStatisticIn(
                         type=stat.type,
                         value=stat.value,
                         unit=stat.unit
@@ -75,7 +75,7 @@ class JSONService:
             
             # Create workout statistics
             for stat_in in workout_statistics:
-                stat_create = WorkoutStatisticCreate(
+                stat_create = HKWorkoutStatisticCreate(
                     user_id=created_workout.user_id,
                     workout_id=created_workout.id,
                     type=stat_in.type,

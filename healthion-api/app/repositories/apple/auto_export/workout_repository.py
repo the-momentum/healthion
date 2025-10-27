@@ -8,7 +8,7 @@ from sqlalchemy.orm import Query
 from app.database import DbSession
 from app.models import Workout, ActiveEnergy, HeartRateData
 from app.repositories import CrudRepository
-from app.schemas import WorkoutQueryParams, AEWorkoutCreate, AEWorkoutUpdate
+from app.schemas import AEWorkoutQueryParams, AEWorkoutCreate, AEWorkoutUpdate
 
 
 class WorkoutRepository(CrudRepository[Workout, AEWorkoutCreate, AEWorkoutUpdate]):
@@ -18,7 +18,7 @@ class WorkoutRepository(CrudRepository[Workout, AEWorkoutCreate, AEWorkoutUpdate
     def get_workouts_with_filters(
         self, 
         db_session: DbSession, 
-        query_params: WorkoutQueryParams,
+        query_params: AEWorkoutQueryParams,
         user_id: str
     ) -> tuple[list[Workout], int]:
         query: Query = db_session.query(Workout)
@@ -34,19 +34,19 @@ class WorkoutRepository(CrudRepository[Workout, AEWorkoutCreate, AEWorkoutUpdate
             start_dt = datetime.fromisoformat(
                 query_params.start_date.replace("Z", "+00:00")
             )
-            filters.append(Workout.start >= start_dt)
+            filters.append(Workout.startDate >= start_dt)
 
         if query_params.end_date:
             end_dt = datetime.fromisoformat(query_params.end_date.replace("Z", "+00:00"))
-            filters.append(Workout.end <= end_dt)
+            filters.append(Workout.endDate <= end_dt)
 
         # Workout type filter
         if query_params.workout_type:
-            filters.append(Workout.name.ilike(f"%{query_params.workout_type}%"))
+            filters.append(Workout.type.ilike(f"%{query_params.workout_type}%"))
 
-        # Location filter
-        if query_params.location:
-            filters.append(Workout.location == query_params.location)
+        # # Location filter
+        # if query_params.location:
+        #     filters.append(Workout.location == query_params.location)
 
         # Duration filters
         if query_params.min_duration is not None:
@@ -55,12 +55,12 @@ class WorkoutRepository(CrudRepository[Workout, AEWorkoutCreate, AEWorkoutUpdate
         if query_params.max_duration is not None:
             filters.append(Workout.duration <= Decimal(query_params.max_duration))
 
-        # Distance filters
-        if query_params.min_distance is not None:
-            filters.append(Workout.distance_qty >= Decimal(str(query_params.min_distance)))
+        # # Distance filters
+        # if query_params.min_distance is not None:
+        #     filters.append(Workout.distance_qty >= Decimal(str(query_params.min_distance)))
 
-        if query_params.max_distance is not None:
-            filters.append(Workout.distance_qty <= Decimal(str(query_params.max_distance)))
+        # if query_params.max_distance is not None:
+        #     filters.append(Workout.distance_qty <= Decimal(str(query_params.max_distance)))
 
         # Apply all filters
         if filters:
@@ -70,7 +70,7 @@ class WorkoutRepository(CrudRepository[Workout, AEWorkoutCreate, AEWorkoutUpdate
         total_count = query.count()
 
         # Apply sorting
-        sort_column = getattr(Workout, query_params.sort_by, Workout.start)
+        sort_column = getattr(Workout, query_params.sort_by, Workout.startDate)
         if query_params.sort_order == "asc":
             query = query.order_by(sort_column)
         else:

@@ -1,5 +1,3 @@
-from datetime import datetime
-from decimal import Decimal
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
@@ -32,7 +30,7 @@ class WorkoutStatisticUpdate(WorkoutStatisticBase):
 class WorkoutStatisticResponse(WorkoutStatisticBase):
     """Schema for WorkoutStatistic response."""
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     user_id: UUID
     workout_id: UUID

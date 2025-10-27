@@ -2,8 +2,8 @@ from logging import Logger, getLogger
 from uuid import UUID
 
 from app.database import DbSession
-from app.models import NewWorkout
-from app.repositories import NewWorkoutRepository
+from app.models import Workout
+from app.repositories import HKWorkoutRepository
 from app.schemas import (
     HKWorkoutCreate,
     HKWorkoutUpdate,
@@ -13,13 +13,13 @@ from app.services import AppService
 from app.utils.exceptions import handle_exceptions
 
 
-class WorkoutService(AppService[NewWorkoutRepository, NewWorkout, HKWorkoutCreate, HKWorkoutUpdate]):
+class WorkoutService(AppService[HKWorkoutRepository, Workout, HKWorkoutCreate, HKWorkoutUpdate]):
     """Service for workout-related business logic."""
 
     def __init__(self, log: Logger, **kwargs):
         super().__init__(
-            crud_model=NewWorkoutRepository,
-            model=NewWorkout,
+            crud_model=HKWorkoutRepository,
+            model=Workout,
             log=log,
             **kwargs
         )
@@ -30,7 +30,7 @@ class WorkoutService(AppService[NewWorkoutRepository, NewWorkout, HKWorkoutCreat
             db_session: DbSession,
             query_params,
             user_id: str
-    ) -> tuple[list[NewWorkout], int]:
+    ) -> tuple[list[Workout], int]:
         """
         Get workouts with filtering, sorting, and pagination.
         Includes business logic and logging.
@@ -42,7 +42,7 @@ class WorkoutService(AppService[NewWorkoutRepository, NewWorkout, HKWorkoutCreat
             self,
             db_session: DbSession,
             workout_id: UUID
-    ) -> tuple[NewWorkout | None, dict]:
+    ) -> tuple[Workout | None, dict]:
         """
         Get a single workout with its summary statistics.
         """

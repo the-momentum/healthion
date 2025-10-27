@@ -4,12 +4,12 @@ from uuid import UUID
 from app.database import DbSession
 from app.models import ActiveEnergy
 from app.repositories import ActiveEnergyRepository
-from app.schemas import ActiveEnergyCreate, ActiveEnergyUpdate
+from app.schemas import AEActiveEnergyCreate, AEActiveEnergyUpdate
 from app.services.services import AppService
 from app.utils.exceptions import handle_exceptions
 
 
-class ActiveEnergyService(AppService[ActiveEnergyRepository, ActiveEnergy, ActiveEnergyCreate, ActiveEnergyUpdate]):
+class ActiveEnergyService(AppService[ActiveEnergyRepository, ActiveEnergy, AEActiveEnergyCreate, AEActiveEnergyUpdate]):
     """Service for active energy-related business logic."""
 
     def __init__(self, log: Logger, **kwargs):
@@ -44,7 +44,7 @@ class ActiveEnergyService(AppService[ActiveEnergyRepository, ActiveEnergy, Activ
     def create_active_energy_batch(
         self, 
         db_session: DbSession, 
-        active_energy_data: list[ActiveEnergyCreate]
+        active_energy_data: list[AEActiveEnergyCreate]
     ) -> list[ActiveEnergy]:
         self.logger.debug(f"Creating batch of {len(active_energy_data)} active energy records")
         

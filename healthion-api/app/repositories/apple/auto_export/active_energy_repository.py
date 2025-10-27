@@ -3,10 +3,10 @@ from uuid import UUID
 from app.database import DbSession
 from app.models import ActiveEnergy
 from app.repositories.repositories import CrudRepository
-from app.schemas import ActiveEnergyCreate, ActiveEnergyUpdate
+from app.schemas import AEActiveEnergyCreate, AEActiveEnergyUpdate
 
 
-class ActiveEnergyRepository(CrudRepository[ActiveEnergy, ActiveEnergyCreate, ActiveEnergyUpdate]):
+class ActiveEnergyRepository(CrudRepository[ActiveEnergy, AEActiveEnergyCreate, AEActiveEnergyUpdate]):
     def __init__(self, model: type[ActiveEnergy]):
         super().__init__(model)
 

@@ -12,20 +12,21 @@ from app.services.apple.auto_export.active_energy_service import active_energy_s
 from app.services.apple.auto_export.heart_rate_service import heart_rate_service
 from app.utils.exceptions import handle_exceptions
 from app.schemas import (
-    WorkoutJSON,
-    HeartRateDataIn,
-    HeartRateRecoveryIn,
-    ActiveEnergyIn,
-    ImportBundle,
-    RootJSON,
-    WorkoutStatisticIn,
-    WorkoutStatisticCreate,
+    AEWorkoutJSON,
+    AEHeartRateDataIn,
+    AEHeartRateRecoveryIn,
+    AEActiveEnergyIn,
+    AEImportBundle,
+    AERootJSON,
+    HKWorkoutStatisticIn,
+    HKWorkoutStatisticCreate,
+    AEWorkoutCreate,
+    HKWorkoutStatisticCreate,
     HKWorkoutIn,
-    HKWorkoutCreate,
+    AEHeartRateDataCreate,
+    AEHeartRateRecoveryCreate,
+    AEActiveEnergyCreate,
     UploadDataResponse,
-    HeartRateDataCreate,
-    HeartRateRecoveryCreate,
-    ActiveEnergyCreate,
 )
 
 
@@ -51,15 +52,15 @@ class ImportService:
         return None if x is None else Decimal(str(x))
 
 
-    def _get_workout_statistics(self, workout: WorkoutJSON) -> list[WorkoutStatisticIn]:
+    def _get_workout_statistics(self, workout: AEWorkoutJSON) -> list[HKWorkoutStatisticIn]:
         """
         Get workout statistics from workout JSON.
         """
-        statistics: list[WorkoutStatisticIn] = []
+        statistics: list[HKWorkoutStatisticIn] = []
         
         if 'activeEnergyBurned' in workout and workout['activeEnergyBurned']:
             ae_data = workout['activeEnergyBurned']
-            statistics.append(WorkoutStatisticIn(
+            statistics.append(HKWorkoutStatisticIn(
                 type="totalEnergyBurned",
                 value=ae_data.get('qty', 0),
                 unit=ae_data.get('units', 'kcal')
@@ -67,7 +68,7 @@ class ImportService:
         
         if 'distance' in workout and workout['distance']:
             dist_data = workout['distance']
-            statistics.append(WorkoutStatisticIn(
+            statistics.append(HKWorkoutStatisticIn(
                 type="totalDistance",
                 value=dist_data.get('qty', 0),
                 unit=dist_data.get('units', 'm')
@@ -75,7 +76,7 @@ class ImportService:
         
         if 'intensity' in workout and workout['intensity']:
             intensity_data = workout['intensity']
-            statistics.append(WorkoutStatisticIn(
+            statistics.append(HKWorkoutStatisticIn(
                 type="averageIntensity",
                 value=intensity_data.get('qty', 0),
                 unit=intensity_data.get('units', 'kcal/hr·kg')
@@ -83,7 +84,7 @@ class ImportService:
         
         if 'temperature' in workout and workout['temperature']:
             temp_data = workout['temperature']
-            statistics.append(WorkoutStatisticIn(
+            statistics.append(HKWorkoutStatisticIn(
                 type="environmentalTemperature",
                 value=temp_data.get('qty', 0),
                 unit=temp_data.get('units', 'degC')
@@ -91,7 +92,7 @@ class ImportService:
         
         if 'humidity' in workout and workout['humidity']:
             humidity_data = workout['humidity']
-            statistics.append(WorkoutStatisticIn(
+            statistics.append(HKWorkoutStatisticIn(
                 type="environmentalHumidity",
                 value=humidity_data.get('qty', 0),
                 unit=humidity_data.get('units', '%')
@@ -99,11 +100,11 @@ class ImportService:
 
         return statistics
 
-    def _get_records(self, workout: WorkoutJSON, wid: UUID) -> tuple[list[HeartRateDataIn], list[HeartRateRecoveryIn], list[ActiveEnergyIn]]:
-        hr_data_rows: list[HeartRateDataIn] = []
+    def _get_records(self, workout: AEWorkoutJSON, wid: UUID) -> tuple[list[AEHeartRateDataIn], list[AEHeartRateRecoveryIn], list[AEActiveEnergyIn]]:
+        hr_data_rows: list[AEHeartRateDataIn] = []
         for e in workout.heartRateData or []:
             hr_data_rows.append(
-                HeartRateDataIn(
+                AEHeartRateDataIn(
                     workout_id=wid,
                     date=self._dt(e.date),
                     source=e.source,
@@ -114,10 +115,10 @@ class ImportService:
                 )
             )
 
-        hr_recovery_rows: list[HeartRateRecoveryIn] = []
+        hr_recovery_rows: list[AEHeartRateRecoveryIn] = []
         for e in workout.heartRateRecovery or []:
             hr_recovery_rows.append(
-                HeartRateRecoveryIn(
+                AEHeartRateRecoveryIn(
                     workout_id=wid,
                     date=self._dt(e.date),
                     source=e.source,
@@ -128,10 +129,10 @@ class ImportService:
                 )
             )
 
-        ae_rows: list[ActiveEnergyIn] = []
+        ae_rows: list[AEActiveEnergyIn] = []
         for e in workout.activeEnergy or []:
             ae_rows.append(
-                ActiveEnergyIn(
+                AEActiveEnergyIn(
                     workout_id=wid,
                     date=self._dt(e.date),
                     source=e.source,
@@ -142,16 +143,16 @@ class ImportService:
         
         return hr_data_rows, hr_recovery_rows, ae_rows
 
-    def _build_import_bundles(self, raw: dict) -> Iterable[ImportBundle]:
+    def _build_import_bundles(self, raw: dict) -> Iterable[AEImportBundle]:
         """
         Given the parsed JSON dict from HealthAutoExport, yield ImportBundles
         ready to insert the database.
         """
-        root = RootJSON(**raw)
+        root = AERootJSON(**raw)
         workouts_raw = root.data.get("workouts", [])
         
         for w in workouts_raw:
-            wjson = WorkoutJSON(**w)
+            wjson = AEWorkoutJSON(**w)
 
             wid = uuid4()
 
@@ -177,7 +178,7 @@ class ImportService:
 
             heart_rate_data, heart_rate_recovery, active_energy = self._get_records(wjson, wid)
 
-            yield ImportBundle(
+            yield AEImportBundle(
                 workout=workout_row,
                 workout_statistics=workout_statistics,
                 heart_rate_data=heart_rate_data,
@@ -194,7 +195,7 @@ class ImportService:
             workout_dict = bundle.workout.model_dump()
             if user_id:
                 workout_dict['user_id'] = UUID(user_id)
-            workout_create = HKWorkoutCreate(**workout_dict)
+            workout_create = AEWorkoutCreate(**workout_dict)
             self.workout_service.create(db_session, workout_create)
 
             for stat in bundle.workout_statistics:
@@ -202,28 +203,28 @@ class ImportService:
                 if user_id:
                     stat_dict['user_id'] = UUID(user_id)
                     stat_dict['workout_id'] = bundle.workout.id
-                stat_create = WorkoutStatisticCreate(**stat_dict)
+                stat_create = HKWorkoutStatisticCreate(**stat_dict)
                 self.workout_statistic_service.create(db_session, stat_create)
 
             for row in bundle.heart_rate_data:
                 hr_data = row.model_dump()
                 if user_id:
                     hr_data['user_id'] = UUID(user_id)
-                hr_create = HeartRateDataCreate(**hr_data)
+                hr_create = AEHeartRateDataCreate(**hr_data)
                 self.heart_rate_data_service.create(db_session, hr_create)
 
             for row in bundle.heart_rate_recovery:
                 hr_recovery_data = row.model_dump()
                 if user_id:
                     hr_recovery_data['user_id'] = UUID(user_id)
-                hr_recovery_create = HeartRateRecoveryCreate(**hr_recovery_data)
+                hr_recovery_create = AEHeartRateRecoveryCreate(**hr_recovery_data)
                 self.heart_rate_recovery_service.create(db_session, hr_recovery_create)
 
             for row in bundle.active_energy:
                 ae_data = row.model_dump()
                 if user_id:
                     ae_data['user_id'] = UUID(user_id)
-                ae_create = ActiveEnergyCreate(**ae_data)
+                ae_create = AEActiveEnergyCreate(**ae_data)
                 self.active_energy_service.create(db_session, ae_create)
 
         return True
