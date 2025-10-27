@@ -5,9 +5,8 @@ from typing import Iterable
 from logging import Logger, getLogger
 
 from app.database import DbSession
-from app.services.new_workout_service import workout_service
-from app.services.workout_statistic_service import workout_statistic_service
-from app.utils.exceptions import handle_exceptions
+from app.services.apple.healthkit.workout_service import workout_service
+from app.services.apple.healthkit.workout_statistic_service import workout_statistic_service
 from app.schemas import (
     HKRootJSON,
     HKNewWorkoutJSON,
@@ -67,7 +66,6 @@ class JSONService:
             yield workout_row, workout_statistics
 
     def load_data(self, db_session: DbSession, raw: dict, user_id: str = None) -> bool:
-        # Validate user exists if user_id is provided
         for workout_row, workout_statistics in self._build_import_bundles(raw):
             workout_data = workout_row.model_dump()
             if user_id:

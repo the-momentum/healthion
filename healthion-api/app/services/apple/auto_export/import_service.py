@@ -6,10 +6,10 @@ from typing import Iterable
 from logging import Logger, getLogger
 
 from app.database import DbSession
-from app.services.new_workout_service import workout_service
-from app.services.workout_statistic_service import workout_statistic_service
-from app.services.active_energy_service import active_energy_service
-from app.services.heart_rate_service import heart_rate_service
+from app.services.apple.healthkit.workout_service import workout_service
+from app.services.apple.healthkit.workout_statistic_service import workout_statistic_service
+from app.services.apple.auto_export.active_energy_service import active_energy_service
+from app.services.apple.auto_export.heart_rate_service import heart_rate_service
 from app.utils.exceptions import handle_exceptions
 from app.schemas import (
     WorkoutJSON,
