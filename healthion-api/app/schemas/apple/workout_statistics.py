@@ -3,49 +3,41 @@ from decimal import Decimal
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
-# Input schemas
-class WorkoutStatisticJSON(BaseModel):
-    """Schema for parsing WorkoutStatistic from JSON import."""
+class WorkoutStatisticBase(BaseModel):
+    """Base schema for workout statistics."""
     type: str
     value: float | int
     unit: str
 
 
-class WorkoutStatisticCreate(BaseModel):
+# Input schemas
+class WorkoutStatisticJSON(WorkoutStatisticBase):
+    """Schema for parsing WorkoutStatistic from JSON import."""
+
+
+class WorkoutStatisticCreate(WorkoutStatisticBase):
     """Schema for creating a WorkoutStatistic."""
     user_id: UUID
     workout_id: UUID
-    type: str
-    value: float | int
-    unit: str
 
 
-class WorkoutStatisticUpdate(BaseModel):
+class WorkoutStatisticUpdate(WorkoutStatisticBase):
     """Schema for creating a WorkoutStatistic."""
     id: int
     user_id: UUID
     workout_id: UUID
-    type: str
-    value: float | int
-    unit: str
 
 
 # Output schema
-class WorkoutStatisticResponse(BaseModel):
+class WorkoutStatisticResponse(WorkoutStatisticBase):
     """Schema for WorkoutStatistic response."""
     model_config = ConfigDict(from_attributes=True)
+    
     id: int
     user_id: UUID
     workout_id: UUID
-    type: str
-    value: float | int
-    unit: str
 
 
-class WorkoutStatisticIn(BaseModel):
+class WorkoutStatisticIn(WorkoutStatisticBase):
     """Schema for workout statistics from JSON input."""
     model_config = ConfigDict(from_attributes=True)
-
-    type: str
-    value: float | int
-    unit: str

@@ -7,10 +7,10 @@ from app.models import HeartRateData, HeartRateRecovery
 from app.schemas import (
     HeartRateDataResponse,
     HeartRateListResponse,
-    HeartRateMeta,
+    AEMeta,
     HeartRateQueryParams,
     HeartRateRecoveryResponse,
-    HeartRateSummary,
+    AESummary,
     HeartRateValue,
 )
 from .mixins.heart_rate_data_service import HeartRateDataService
@@ -146,10 +146,10 @@ class HeartRateService:
             heart_rate_recovery_responses.append(heart_rate_recovery_response)
 
         # Build summary
-        summary = HeartRateSummary(**summary_data)
+        summary = AESummary(**summary_data)
 
         # Build metadata
-        meta = HeartRateMeta(
+        meta = AEMeta(
             requested_at=datetime.now().isoformat() + "Z",
             filters=query_params.model_dump(exclude_none=True),
             result_count=hr_total_count + recovery_total_count,

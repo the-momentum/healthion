@@ -5,15 +5,15 @@ from app.database import DbSession
 from app.models import NewWorkout
 from app.repositories import NewWorkoutRepository
 from app.schemas import (
-    NewWorkoutCreate,
-    NewWorkoutUpdate,
+    HKWorkoutCreate,
+    HKWorkoutUpdate,
 
 )
 from app.services import AppService
 from app.utils.exceptions import handle_exceptions
 
 
-class WorkoutService(AppService[NewWorkoutRepository, NewWorkout, NewWorkoutCreate, NewWorkoutUpdate]):
+class WorkoutService(AppService[NewWorkoutRepository, NewWorkout, HKWorkoutCreate, HKWorkoutUpdate]):
     """Service for workout-related business logic."""
 
     def __init__(self, log: Logger, **kwargs):

@@ -8,10 +8,10 @@ from sqlalchemy.orm import Query
 from app.database import DbSession
 from app.models import Workout, ActiveEnergy, HeartRateData
 from app.repositories import CrudRepository
-from app.schemas import WorkoutQueryParams, WorkoutCreate, WorkoutUpdate
+from app.schemas import WorkoutQueryParams, AEWorkoutCreate, AEWorkoutUpdate
 
 
-class WorkoutRepository(CrudRepository[Workout, WorkoutCreate, WorkoutUpdate]):
+class WorkoutRepository(CrudRepository[Workout, AEWorkoutCreate, AEWorkoutUpdate]):
     def __init__(self, model: type[Workout]):
         super().__init__(model)
 

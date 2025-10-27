@@ -1,9 +1,9 @@
 from uuid import UUID
 
 from app.database import DbSession
-from app.models.active_energy import ActiveEnergy
+from app.models import ActiveEnergy
 from app.repositories.repositories import CrudRepository
-from app.schemas.active_energy import ActiveEnergyCreate, ActiveEnergyUpdate
+from app.schemas import ActiveEnergyCreate, ActiveEnergyUpdate
 
 
 class ActiveEnergyRepository(CrudRepository[ActiveEnergy, ActiveEnergyCreate, ActiveEnergyUpdate]):

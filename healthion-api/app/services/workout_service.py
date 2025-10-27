@@ -7,24 +7,24 @@ from app.models import Workout
 from app.repositories import WorkoutRepository
 from app.schemas import (
     WorkoutQueryParams, 
-    WorkoutCreate, 
-    WorkoutUpdate,
+    AEWorkoutCreate, 
+    AEWorkoutUpdate,
     WorkoutListResponse,
-    WorkoutResponse,
-    WorkoutSummary,
-    WorkoutMeta,
+    AEWorkoutResponse,
+    AESummary,
+    AEMeta,
     DistanceValue,
-    ActiveEnergyValue,
-    IntensityValue,
-    TemperatureValue,
-    HumidityValue,
+    AEActiveEnergyValue,
+    AEIntensityValue,
+    AETemperatureValue,
+    AEHumidityValue,
     DateRange,
 )
 from app.services import AppService
 from app.utils.exceptions import handle_exceptions
 
 
-class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, WorkoutUpdate]):
+class WorkoutService(AppService[WorkoutRepository, Workout, AEWorkoutCreate, AEWorkoutUpdate]):
     """Service for workout-related business logic."""
 
     def __init__(self, log: Logger, **kwargs):
@@ -97,7 +97,7 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
             _, summary_data = await self._get_workout_with_summary(db_session, workout.id)
             
             # Build response object
-            workout_response = WorkoutResponse(
+            workout_response = AEWorkoutResponse(
                 id=workout.id,
                 name=workout.name or "Unknown Workout",
                 location=workout.location or "Outdoor",
@@ -108,16 +108,16 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
                     value=float(workout.distance_qty or 0),
                     unit=workout.distance_units or "km",
                 ),
-                active_energy_burned=ActiveEnergyValue(
+                active_energy_burned=AEActiveEnergyValue(
                     value=float(workout.active_energy_burned_qty or 0),
                     unit=workout.active_energy_burned_units or "kJ",
                 ),
-                intensity=IntensityValue(
+                intensity=AEIntensityValue(
                     value=float(workout.intensity_qty or 0),
                     unit=workout.intensity_units or "kcal/hr·kg",
                 ),
                 temperature=(
-                    TemperatureValue(
+                    AETemperatureValue(
                         value=float(workout.temperature_qty or 0),
                         unit=workout.temperature_units or "°C",
                     )
@@ -125,14 +125,14 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
                     else None
                 ),
                 humidity=(
-                    HumidityValue(
+                    AEHumidityValue(
                         value=float(workout.humidity_qty or 0),
                         unit=workout.humidity_units or "%",
                     )
                     if workout.humidity_qty
                     else None
                 ),
-                summary=WorkoutSummary(**summary_data),
+                summary=AESummary(**summary_data),
             )
             workout_responses.append(workout_response)
 
@@ -146,7 +146,7 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
         duration_days = (end_date - start_date).days
         
         # Build metadata
-        meta = WorkoutMeta(
+        meta = AEMeta(
             requested_at=datetime.now().isoformat() + "Z",
             filters=query_params.model_dump(exclude_none=True),
             result_count=total_count,

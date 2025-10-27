@@ -1,7 +1,7 @@
 from app.database import DbSession
 from app.models import HeartRateData
 from app.repositories.repositories import CrudRepository
-from app.repositories.base_heart_rate_repository import BaseHeartRateRepository
+from app.repositories.apple.auto_export.base_heart_rate_repository import BaseHeartRateRepository
 from app.schemas import HeartRateQueryParams
 from app.schemas import (
     HeartRateDataCreate, 

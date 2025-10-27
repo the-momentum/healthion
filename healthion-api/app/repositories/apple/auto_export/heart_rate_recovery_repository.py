@@ -1,13 +1,12 @@
 from sqlalchemy import func
 
 from app.database import DbSession
-from app.models.heart_rate_data import HeartRateData
-from app.models.heart_rate_recovery import HeartRateRecovery
-from app.repositories.base_heart_rate_repository import BaseHeartRateRepository
-from app.repositories.heart_rate_data_repository import HeartRateDataRepository
+from app.models import HeartRateData, HeartRateRecovery
+from app.repositories.apple.auto_export.base_heart_rate_repository import BaseHeartRateRepository
+from app.repositories.apple.auto_export.heart_rate_data_repository import HeartRateDataRepository
 from app.repositories.repositories import CrudRepository
-from app.schemas.heart_rate import HeartRateQueryParams
-from app.schemas.heart_rate import (
+from app.schemas import HeartRateQueryParams
+from app.schemas import (
     HeartRateRecoveryCreate,
     HeartRateRecoveryUpdate
 )
