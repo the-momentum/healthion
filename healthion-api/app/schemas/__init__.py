@@ -97,6 +97,8 @@ __all__ = [
     "AEWorkoutSummary",
     "AEWorkoutMeta",
     
+    "AESummary",
+    "AEMeta",
     "AEDistanceValue",
     "AEActiveEnergyValue",
     "AEIntensityValue",
