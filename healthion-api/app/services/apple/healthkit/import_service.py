@@ -18,7 +18,7 @@ from app.schemas import (
 )
 
 
-class JSONService:
+class ImportService:
     def __init__(self, log: Logger, **kwargs):
         self.log = log
         self.workout_service = workout_service
@@ -142,4 +142,4 @@ class JSONService:
             return None
 
 
-import_service = JSONService(log=getLogger(__name__))
+import_service = ImportService(log=getLogger(__name__))

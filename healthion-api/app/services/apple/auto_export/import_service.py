@@ -191,12 +191,6 @@ class ImportService:
 
             workout_dict = bundle.workout.model_dump()
             
-            
-            workout_dict.pop('workoutStatistics', None)
-            
-            # Remove user_id if present (HKWorkoutIn may have it as optional)
-            workout_dict.pop('user_id', None)
-            
             if user_id:
                 workout_dict['user_id'] = UUID(user_id)
             
