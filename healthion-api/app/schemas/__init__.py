@@ -11,8 +11,8 @@ from .apple.auto_export.workout_values import (
 from .apple.auto_export.workout_responses import (
     WorkoutResponse as AEWorkoutResponse,
     WorkoutListResponse as AEWorkoutListResponse,
-    WorkoutSummary as AESummary,
-    WorkoutMeta as AEMeta,
+    WorkoutSummary as AEWorkoutSummary,
+    WorkoutMeta as AEWorkoutMeta,
     DateRange as AEDateRange,
 )
 from .apple.auto_export.workout_crud import (
@@ -94,9 +94,9 @@ __all__ = [
     "AEWorkoutQueryParams",
     "AEWorkoutResponse",
     "AEWorkoutListResponse",
+    "AEWorkoutSummary",
+    "AEWorkoutMeta",
     
-    "AESummary",
-    "AEMeta",
     "AEDistanceValue",
     "AEActiveEnergyValue",
     "AEIntensityValue",
