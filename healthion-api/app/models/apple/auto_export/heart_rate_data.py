@@ -22,4 +22,4 @@ class HeartRateData(BaseDbModel):
     max: Mapped[numeric_10_3 | None]
 
     user: Mapped[ManyToOne["User"]]
-    workout: Mapped[ManyToOne["NewWorkout"]]
+    workout: Mapped[ManyToOne["Workout"]]

@@ -17,8 +17,6 @@ from app.schemas import (
     UploadDataResponse,
 )
 
-APPLE_DT_FORMAT = "%Y-%m-%d %H:%M:%S %z"
-
 
 class JSONService:
     def __init__(self, log: Logger, **kwargs):

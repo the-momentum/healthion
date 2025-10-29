@@ -20,8 +20,7 @@ from app.schemas import (
     AERootJSON,
     HKWorkoutStatisticIn,
     HKWorkoutStatisticCreate,
-    AEWorkoutCreate,
-    HKWorkoutStatisticCreate,
+    HKWorkoutCreate,
     HKWorkoutIn,
     AEHeartRateDataCreate,
     AEHeartRateRecoveryCreate,
@@ -30,7 +29,7 @@ from app.schemas import (
 )
 
 
-# APPLE_DT_FORMAT = "%Y-%m-%d %H:%M:%S %z"
+APPLE_DT_FORMAT = "%Y-%m-%d %H:%M:%S %z"
 
 class ImportService:
     def __init__(self, log: Logger, **kwargs):
@@ -40,7 +39,6 @@ class ImportService:
         self.active_energy_service = active_energy_service
         self.heart_rate_data_service = heart_rate_service.heart_rate_data_service
         self.heart_rate_recovery_service = heart_rate_service.heart_rate_recovery_service
-        self.active_energy_service = active_energy_service
 
     def _dt(self, s: str) -> datetime:
         s = s.replace(" +", "+").replace(" ", "T", 1)
@@ -58,44 +56,44 @@ class ImportService:
         """
         statistics: list[HKWorkoutStatisticIn] = []
         
-        if 'activeEnergyBurned' in workout and workout['activeEnergyBurned']:
-            ae_data = workout['activeEnergyBurned']
+        if workout.activeEnergyBurned is not None:
+            ae_data = workout.activeEnergyBurned
             statistics.append(HKWorkoutStatisticIn(
                 type="totalEnergyBurned",
-                value=ae_data.get('qty', 0),
-                unit=ae_data.get('units', 'kcal')
+                value=ae_data.qty or 0,
+                unit=ae_data.units or 'kcal'
             ))
         
-        if 'distance' in workout and workout['distance']:
-            dist_data = workout['distance']
+        if workout.distance is not None:
+            dist_data = workout.distance
             statistics.append(HKWorkoutStatisticIn(
                 type="totalDistance",
-                value=dist_data.get('qty', 0),
-                unit=dist_data.get('units', 'm')
+                value=dist_data.qty or 0,
+                unit=dist_data.units or 'm'
             ))
         
-        if 'intensity' in workout and workout['intensity']:
-            intensity_data = workout['intensity']
+        if workout.intensity is not None:
+            intensity_data = workout.intensity
             statistics.append(HKWorkoutStatisticIn(
                 type="averageIntensity",
-                value=intensity_data.get('qty', 0),
-                unit=intensity_data.get('units', 'kcal/hr·kg')
+                value=intensity_data.qty or 0,
+                unit=intensity_data.units or 'kcal/hr·kg'
             ))
         
-        if 'temperature' in workout and workout['temperature']:
-            temp_data = workout['temperature']
+        if workout.temperature is not None:
+            temp_data = workout.temperature
             statistics.append(HKWorkoutStatisticIn(
                 type="environmentalTemperature",
-                value=temp_data.get('qty', 0),
-                unit=temp_data.get('units', 'degC')
+                value=temp_data.qty or 0,
+                unit=temp_data.units or 'degC'
             ))
         
-        if 'humidity' in workout and workout['humidity']:
-            humidity_data = workout['humidity']
+        if workout.humidity is not None:
+            humidity_data = workout.humidity
             statistics.append(HKWorkoutStatisticIn(
                 type="environmentalHumidity",
-                value=humidity_data.get('qty', 0),
-                unit=humidity_data.get('units', '%')
+                value=humidity_data.qty or 0,
+                unit=humidity_data.units or '%'
             ))
 
         return statistics
@@ -173,7 +171,7 @@ class ImportService:
                 duration=self._dec(duration),
                 durationUnit=duration_unit,
                 sourceName="Auto Export",
-                workoutStatistics=workout_statistics
+                workoutStatistics=None
             )
 
             heart_rate_data, heart_rate_recovery, active_energy = self._get_records(wjson, wid)
@@ -191,18 +189,25 @@ class ImportService:
 
         for bundle in self._build_import_bundles(raw):
 
-
             workout_dict = bundle.workout.model_dump()
+            
+            
+            workout_dict.pop('workoutStatistics', None)
+            
+            # Remove user_id if present (HKWorkoutIn may have it as optional)
+            workout_dict.pop('user_id', None)
+            
             if user_id:
                 workout_dict['user_id'] = UUID(user_id)
-            workout_create = AEWorkoutCreate(**workout_dict)
-            self.workout_service.create(db_session, workout_create)
+            
+            workout_create = HKWorkoutCreate(**workout_dict)
+            created_workout = self.workout_service.create(db_session, workout_create)
 
             for stat in bundle.workout_statistics:
                 stat_dict = stat.model_dump()
                 if user_id:
                     stat_dict['user_id'] = UUID(user_id)
-                    stat_dict['workout_id'] = bundle.workout.id
+                    stat_dict['workout_id'] = created_workout.id
                 stat_create = HKWorkoutStatisticCreate(**stat_dict)
                 self.workout_statistic_service.create(db_session, stat_create)
 

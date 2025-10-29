@@ -21,4 +21,4 @@ class ActiveEnergy(BaseDbModel):
     qty: Mapped[numeric_15_5 | None]
 
     user: Mapped[ManyToOne["User"]]
-    workout: Mapped[ManyToOne["NewWorkout"]]
+    workout: Mapped[ManyToOne["Workout"]]

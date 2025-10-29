@@ -1,5 +1,5 @@
 from .user import User
-from .apple.workout import Workout, OldWorkout
+from .apple.workout import Workout
 from .apple.healthkit.record import Record
 from .apple.healthkit.workout_statistic import WorkoutStatistic
 from .apple.healthkit.metadata_entry import MetadataEntry
@@ -13,7 +13,6 @@ __all__ = [
     "Record",
     "MetadataEntry",
     "Workout",
-    "OldWorkout",
     "WorkoutStatistic",
     "HeartRateData",
     "HeartRateRecovery",
