@@ -54,6 +54,9 @@ from .apple.healthkit.workout_crud import (
     WorkoutCreate as HKWorkoutCreate,
     WorkoutUpdate as HKWorkoutUpdate,
 )
+from .apple.healthkit.workout_queries import (
+    WorkoutQueryParams as HKWorkoutQueryParams,
+)
 from .apple.healthkit.workout_responses import (
     WorkoutResponse as HKWorkoutResponse,
 )
@@ -135,6 +138,7 @@ __all__ = [
     # HealthKit schemas
     "HKWorkoutCreate",
     "HKWorkoutUpdate",
+    "HKWorkoutQueryParams",
     "HKWorkoutResponse",
     
     "HKWorkoutIn",
