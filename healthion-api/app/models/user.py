@@ -8,11 +8,11 @@ from app.mappings import OneToMany, PrimaryKey, Unique, UniqueIndex, datetime_tz
 
 class User(BaseDbModel):
     id: Mapped[PrimaryKey[UUID]]
-    auth0_id: Mapped[Unique[str]] 
+    auth0_id: Mapped[Unique[str]]
     email: Mapped[Unique[email]]
     created_at: Mapped[datetime_tz]
     updated_at: Mapped[datetime_tz]
-    
+
     workouts: Mapped[OneToMany["Workout"]]
     heart_rate_data: Mapped[OneToMany["HeartRateData"]]
     heart_rate_recovery: Mapped[OneToMany["HeartRateRecovery"]]

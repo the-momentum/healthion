@@ -4,32 +4,30 @@ from uuid import UUID
 
 from app.database import DbSession
 from app.models import Workout
-from app.repositories import WorkoutRepository
+from app.repositories import AEWorkoutRepository
 from app.schemas import (
-    WorkoutQueryParams, 
-    WorkoutCreate, 
-    WorkoutUpdate,
-    WorkoutListResponse,
-    WorkoutResponse,
-    WorkoutSummary,
-    WorkoutMeta,
-    DistanceValue,
-    ActiveEnergyValue,
-    IntensityValue,
-    TemperatureValue,
-    HumidityValue,
-    DateRange,
+    AEWorkoutQueryParams, 
+    AEWorkoutCreate, 
+    AEWorkoutUpdate,
+    AEWorkoutListResponse,
+    AEWorkoutResponse,
+    AESummary,
+    AEWorkoutMeta,
+    AEDistanceValue,
+    AEActiveEnergyValue,
+    AEIntensityValue,
+    AEDateRange,
 )
 from app.services import AppService
 from app.utils.exceptions import handle_exceptions
 
 
-class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, WorkoutUpdate]):
+class WorkoutService(AppService[AEWorkoutRepository, Workout, AEWorkoutCreate, AEWorkoutUpdate]):
     """Service for workout-related business logic."""
 
     def __init__(self, log: Logger, **kwargs):
         super().__init__(
-            crud_model=WorkoutRepository,
+            crud_model=AEWorkoutRepository,
             model=Workout,
             log=log,
             **kwargs
@@ -39,7 +37,7 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
     async def _get_workouts_with_filters(
         self, 
         db_session: DbSession, 
-        query_params: WorkoutQueryParams,
+        query_params: AEWorkoutQueryParams,
         user_id: str
     ) -> tuple[list[Workout], int]:
         """
@@ -78,9 +76,9 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
     async def get_workouts_response(
         self, 
         db_session: DbSession, 
-        query_params: WorkoutQueryParams,
+        query_params: AEWorkoutQueryParams,
         user_id: str
-    ) -> WorkoutListResponse:
+    ) -> AEWorkoutListResponse:
         """
         Get workouts formatted as API response.
         
@@ -97,67 +95,51 @@ class WorkoutService(AppService[WorkoutRepository, Workout, WorkoutCreate, Worko
             _, summary_data = await self._get_workout_with_summary(db_session, workout.id)
             
             # Build response object
-            workout_response = WorkoutResponse(
+            workout_response = AEWorkoutResponse(
                 id=workout.id,
-                name=workout.name or "Unknown Workout",
-                location=workout.location or "Outdoor",
-                start=workout.start.isoformat(),
-                end=workout.end.isoformat(),
+                name=workout.type or "Unknown Workout",
+                location="Outdoor",
+                start=workout.startDate.isoformat(),
+                end=workout.endDate.isoformat(),
                 duration=int(workout.duration or 0),
-                distance=DistanceValue(
-                    value=float(workout.distance_qty or 0),
-                    unit=workout.distance_units or "km",
+                distance=AEDistanceValue(
+                    value=0.0,
+                    unit="km",
                 ),
-                active_energy_burned=ActiveEnergyValue(
-                    value=float(workout.active_energy_burned_qty or 0),
-                    unit=workout.active_energy_burned_units or "kJ",
+                active_energy_burned=AEActiveEnergyValue(
+                    value=summary_data.get("total_calories", 0.0),
+                    unit="kcal",
                 ),
-                intensity=IntensityValue(
-                    value=float(workout.intensity_qty or 0),
-                    unit=workout.intensity_units or "kcal/hr·kg",
+                intensity=AEIntensityValue(
+                    value=0.0,
+                    unit="kcal/hr·kg",
                 ),
-                temperature=(
-                    TemperatureValue(
-                        value=float(workout.temperature_qty or 0),
-                        unit=workout.temperature_units or "°C",
-                    )
-                    if workout.temperature_qty
-                    else None
-                ),
-                humidity=(
-                    HumidityValue(
-                        value=float(workout.humidity_qty or 0),
-                        unit=workout.humidity_units or "%",
-                    )
-                    if workout.humidity_qty
-                    else None
-                ),
-                summary=WorkoutSummary(**summary_data),
+                temperature=None,
+                humidity=None,
+                source=workout.sourceName,
+                summary=AESummary(**summary_data),
             )
             workout_responses.append(workout_response)
 
-        # Calculate date range and duration
         start_date_str = query_params.start_date or "1900-01-01T00:00:00Z"
         end_date_str = query_params.end_date or datetime.now().isoformat() + "Z"
         
-        # Parse dates to calculate duration
         start_date = datetime.fromisoformat(start_date_str.replace("Z", "+00:00"))
         end_date = datetime.fromisoformat(end_date_str.replace("Z", "+00:00"))
         duration_days = (end_date - start_date).days
         
-        # Build metadata
-        meta = WorkoutMeta(
+        meta = AEWorkoutMeta(
             requested_at=datetime.now().isoformat() + "Z",
             filters=query_params.model_dump(exclude_none=True),
             result_count=total_count,
-            date_range=DateRange(
+            date_range=AEDateRange(
                 start=start_date_str,
                 end=end_date_str,
                 duration_days=duration_days,
             ),
         )
 
-        return WorkoutListResponse(
+        return AEWorkoutListResponse(
             data=workout_responses,
             meta=meta,
         )

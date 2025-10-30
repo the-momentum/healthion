@@ -7,21 +7,18 @@ from app.mappings import (
     ManyToOne,
     PrimaryKey,
     datetime_tz,
-    numeric_10_3,
+    numeric_15_5,
     str_50,
 )
 
-
-class HeartRateRecovery(BaseDbModel):
+class ActiveEnergy(BaseDbModel):
     id: Mapped[PrimaryKey[int]]
     user_id: Mapped[FKUser]
     workout_id: Mapped[FKWorkout]
     date: Mapped[datetime_tz]
     source: Mapped[str | None]
     units: Mapped[str_50 | None]
-    avg: Mapped[numeric_10_3 | None]
-    min: Mapped[numeric_10_3 | None]
-    max: Mapped[numeric_10_3 | None]
+    qty: Mapped[numeric_15_5 | None]
 
     user: Mapped[ManyToOne["User"]]
     workout: Mapped[ManyToOne["Workout"]]

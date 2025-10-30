@@ -4,15 +4,15 @@ from app.database import DbSession
 from app.models import HeartRateData
 from app.repositories import HeartRateDataRepository
 from app.schemas import (
-    HeartRateQueryParams,
-    HeartRateDataCreate, 
-    HeartRateDataUpdate
+    AEHeartRateQueryParams,
+    AEHeartRateDataCreate, 
+    AEHeartRateDataUpdate
 )
 from app.services import AppService
 from app.utils.exceptions import handle_exceptions
 
 
-class HeartRateDataService(AppService[HeartRateDataRepository, HeartRateData, HeartRateDataCreate, HeartRateDataUpdate]):
+class HeartRateDataService(AppService[HeartRateDataRepository, HeartRateData, AEHeartRateDataCreate, AEHeartRateDataUpdate]):
     """Service for heart rate data business logic."""
 
     def __init__(self, log: Logger, **kwargs):
@@ -27,7 +27,7 @@ class HeartRateDataService(AppService[HeartRateDataRepository, HeartRateData, He
     async def get_heart_rate_data_with_filters(
         self, 
         db_session: DbSession, 
-        query_params: HeartRateQueryParams,
+        query_params: AEHeartRateQueryParams,
         user_id: str
     ) -> tuple[list[HeartRateData], int]:
         """

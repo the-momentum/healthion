@@ -4,15 +4,15 @@ from app.database import DbSession
 from app.models import HeartRateRecovery
 from app.repositories import HeartRateRecoveryRepository
 from app.schemas import (
-    HeartRateQueryParams,
-    HeartRateRecoveryCreate,
-    HeartRateRecoveryUpdate
+    AEHeartRateQueryParams,
+    AEHeartRateRecoveryCreate,
+    AEHeartRateRecoveryUpdate
 )
 from app.services import AppService
 from app.utils.exceptions import handle_exceptions
 
 
-class HeartRateRecoveryService(AppService[HeartRateRecoveryRepository, HeartRateRecovery, HeartRateRecoveryCreate, HeartRateRecoveryUpdate]):
+class HeartRateRecoveryService(AppService[HeartRateRecoveryRepository, HeartRateRecovery, AEHeartRateRecoveryCreate, AEHeartRateRecoveryUpdate]):
     """Service for heart rate recovery business logic."""
 
     def __init__(self, log: Logger, **kwargs):
@@ -27,7 +27,7 @@ class HeartRateRecoveryService(AppService[HeartRateRecoveryRepository, HeartRate
     async def get_heart_rate_recovery_with_filters(
         self, 
         db_session: DbSession, 
-        query_params: HeartRateQueryParams,
+        query_params: AEHeartRateQueryParams,
         user_id: str
     ) -> tuple[list[HeartRateRecovery], int]:
         """
@@ -47,7 +47,7 @@ class HeartRateRecoveryService(AppService[HeartRateRecoveryRepository, HeartRate
     async def get_heart_rate_summary(
         self, 
         db_session: DbSession, 
-        query_params: HeartRateQueryParams,
+        query_params: AEHeartRateQueryParams,
         user_id: str
     ) -> dict:
         """

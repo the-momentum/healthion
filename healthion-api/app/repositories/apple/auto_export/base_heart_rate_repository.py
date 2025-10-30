@@ -5,7 +5,7 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm import Query
 
 from app.database import BaseDbModel, DbSession
-from app.schemas import HeartRateQueryParams
+from app.schemas import AEHeartRateQueryParams
 
 
 class BaseHeartRateRepository[HeartRateModel: BaseDbModel]:
@@ -15,7 +15,7 @@ class BaseHeartRateRepository[HeartRateModel: BaseDbModel]:
     def _apply_common_filters(
         self, 
         query: Query, 
-        query_params: HeartRateQueryParams, 
+        query_params: AEHeartRateQueryParams, 
         user_id: str
     ) -> Query:
         filters = []
@@ -70,7 +70,7 @@ class BaseHeartRateRepository[HeartRateModel: BaseDbModel]:
     def _apply_sorting_and_pagination(
         self, 
         query: Query, 
-        query_params: HeartRateQueryParams
+        query_params: AEHeartRateQueryParams
     ) -> Query:
         """
         Apply sorting and pagination to query.
@@ -97,7 +97,7 @@ class BaseHeartRateRepository[HeartRateModel: BaseDbModel]:
     def get_heart_rate_with_filters(
         self, 
         db_session: DbSession, 
-        query_params: HeartRateQueryParams,
+        query_params: AEHeartRateQueryParams,
         user_id: str
     ) -> tuple[list[HeartRateModel], int]:
         query: Query = db_session.query(self.model)
