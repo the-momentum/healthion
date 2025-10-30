@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from app.schemas.apple.common import BaseQueryParams
 
@@ -11,15 +11,16 @@ class WorkoutQueryParams(BaseQueryParams):
     """Query parameters for workout filtering and pagination."""
 
     workout_type: str | None = Field(
-        None, description="e.g., 'Outdoor Walk', 'Indoor Walk'"
+        None, description="Workout type (e.g., 'HKWorkoutActivityTypeRunning', 'HKWorkoutActivityTypeWalking')"
     )
-    location: Literal["Indoor", "Outdoor"] | None = Field(
-        None, description="Indoor or Outdoor"
+    source_name: str | None = Field(
+        None, description="Source name of the workout (e.g., 'Apple Watch', 'iPhone')"
     )
     min_duration: int | None = Field(None, description="in seconds")
     max_duration: int | None = Field(None, description="in seconds")
-    min_distance: float | None = Field(None, description="in km")
-    max_distance: float | None = Field(None, description="in km")
-    sort_by: Literal["date", "duration", "distance", "calories"] | None = Field(
-        "date", description="Sort field"
+    duration_unit: Literal["s", "min", "h"] | None = Field(
+        None, description="Duration unit filter"
+    )
+    sort_by: Literal["startDate", "endDate", "duration", "type", "sourceName"] | None = Field(
+        "startDate", description="Sort field"
     )

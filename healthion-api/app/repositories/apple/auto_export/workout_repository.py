@@ -44,9 +44,9 @@ class WorkoutRepository(CrudRepository[Workout, AEWorkoutCreate, AEWorkoutUpdate
         if query_params.workout_type:
             filters.append(Workout.type.ilike(f"%{query_params.workout_type}%"))
 
-        # # Location filter
-        # if query_params.location:
-        #     filters.append(Workout.location == query_params.location)
+        # Source name filter
+        if query_params.source_name:
+            filters.append(Workout.sourceName.ilike(f"%{query_params.source_name}%"))
 
         # Duration filters
         if query_params.min_duration is not None:
@@ -55,12 +55,9 @@ class WorkoutRepository(CrudRepository[Workout, AEWorkoutCreate, AEWorkoutUpdate
         if query_params.max_duration is not None:
             filters.append(Workout.duration <= Decimal(query_params.max_duration))
 
-        # # Distance filters
-        # if query_params.min_distance is not None:
-        #     filters.append(Workout.distance_qty >= Decimal(str(query_params.min_distance)))
-
-        # if query_params.max_distance is not None:
-        #     filters.append(Workout.distance_qty <= Decimal(str(query_params.max_distance)))
+        # Duration unit filter
+        if query_params.duration_unit:
+            filters.append(Workout.durationUnit == query_params.duration_unit)
 
         # Apply all filters
         if filters:

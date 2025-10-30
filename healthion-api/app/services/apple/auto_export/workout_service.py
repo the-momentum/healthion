@@ -12,12 +12,10 @@ from app.schemas import (
     AEWorkoutListResponse,
     AEWorkoutResponse,
     AESummary,
-    AEMeta,
+    AEWorkoutMeta,
     AEDistanceValue,
     AEActiveEnergyValue,
     AEIntensityValue,
-    AETemperatureValue,
-    AEHumidityValue,
     AEDateRange,
 )
 from app.services import AppService
@@ -99,54 +97,38 @@ class WorkoutService(AppService[AEWorkoutRepository, Workout, AEWorkoutCreate, A
             # Build response object
             workout_response = AEWorkoutResponse(
                 id=workout.id,
-                name=workout.name or "Unknown Workout",
-                location=workout.location or "Outdoor",
-                start=workout.start.isoformat(),
-                end=workout.end.isoformat(),
+                name=workout.type or "Unknown Workout",
+                location="Outdoor",
+                start=workout.startDate.isoformat(),
+                end=workout.endDate.isoformat(),
                 duration=int(workout.duration or 0),
                 distance=AEDistanceValue(
-                    value=float(workout.distance_qty or 0),
-                    unit=workout.distance_units or "km",
+                    value=0.0,
+                    unit="km",
                 ),
                 active_energy_burned=AEActiveEnergyValue(
-                    value=float(workout.active_energy_burned_qty or 0),
-                    unit=workout.active_energy_burned_units or "kJ",
+                    value=summary_data.get("total_calories", 0.0),
+                    unit="kcal",
                 ),
                 intensity=AEIntensityValue(
-                    value=float(workout.intensity_qty or 0),
-                    unit=workout.intensity_units or "kcal/hr·kg",
+                    value=0.0,
+                    unit="kcal/hr·kg",
                 ),
-                temperature=(
-                    AETemperatureValue(
-                        value=float(workout.temperature_qty or 0),
-                        unit=workout.temperature_units or "°C",
-                    )
-                    if workout.temperature_qty
-                    else None
-                ),
-                humidity=(
-                    AEHumidityValue(
-                        value=float(workout.humidity_qty or 0),
-                        unit=workout.humidity_units or "%",
-                    )
-                    if workout.humidity_qty
-                    else None
-                ),
+                temperature=None,
+                humidity=None,
+                source=workout.sourceName,
                 summary=AESummary(**summary_data),
             )
             workout_responses.append(workout_response)
 
-        # Calculate date range and duration
         start_date_str = query_params.start_date or "1900-01-01T00:00:00Z"
         end_date_str = query_params.end_date or datetime.now().isoformat() + "Z"
         
-        # Parse dates to calculate duration
         start_date = datetime.fromisoformat(start_date_str.replace("Z", "+00:00"))
         end_date = datetime.fromisoformat(end_date_str.replace("Z", "+00:00"))
         duration_days = (end_date - start_date).days
         
-        # Build metadata
-        meta = AEMeta(
+        meta = AEWorkoutMeta(
             requested_at=datetime.now().isoformat() + "Z",
             filters=query_params.model_dump(exclude_none=True),
             result_count=total_count,

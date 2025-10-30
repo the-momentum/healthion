@@ -59,6 +59,10 @@ from .apple.healthkit.workout_queries import (
 )
 from .apple.healthkit.workout_responses import (
     WorkoutResponse as HKWorkoutResponse,
+    WorkoutListResponse as HKWorkoutListResponse,
+    WorkoutSummary as HKWorkoutSummary,
+    WorkoutMeta as HKWorkoutMeta,
+    DateRange as HKDateRange,
 )
 from .apple.healthkit.workout_import import (
     WorkoutIn as HKWorkoutIn,
@@ -140,6 +144,10 @@ __all__ = [
     "HKWorkoutUpdate",
     "HKWorkoutQueryParams",
     "HKWorkoutResponse",
+    "HKWorkoutListResponse",
+    "HKWorkoutSummary",
+    "HKWorkoutMeta",
+    "HKDateRange",
     
     "HKWorkoutIn",
     
