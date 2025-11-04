@@ -86,43 +86,24 @@ export interface HeartRateResponse {
 
 export interface WorkoutData {
   id: string
-  name: string
-  start: string
-  end: string
+  type: string | null
+  startDate: string
+  endDate: string
   duration: number
-  location: string
-  distance: {
-    value: number
-    unit: string
-  }
-  active_energy_burned: {
-    value: number
-    unit: string
-  }
-  intensity: {
-    value: number
-    unit: string
-  }
-  temperature: {
-    value: number
-    unit: string
-  }
-  humidity: {
-    value: number
-    unit: string
-  }
-  source: string
-  summary: {
-    avg_heart_rate: number
-    max_heart_rate: number
-    min_heart_rate: number
-    total_calories: number
-  }
+  durationUnit: string
+  sourceName: string | null
+  user_id: string
+  summary: WorkoutSummary
 }
 
 export interface WorkoutSummary {
-  total_workouts: number
-  total_duration: number
+  total_statistics: number
+  avg_statistic_value: number
+  max_statistic_value: number
+  min_statistic_value: number
+  avg_heart_rate: number
+  max_heart_rate: number
+  min_heart_rate: number
   total_calories: number
 }
 
@@ -154,7 +135,7 @@ export interface WorkoutFilters {
   max_duration?: number
   min_distance?: number
   max_distance?: number
-  sort_by?: 'date' | 'duration' | 'distance' | 'calories'
+  sort_by?: 'startDate' | 'endDate' | 'duration' | 'type' | 'sourceName'
   sort_order?: 'asc' | 'desc'
 }
 

@@ -15,8 +15,7 @@ export default function Workouts() {
         end_date: '',
         limit: 20,
         workout_type: '',
-        location: undefined as 'Indoor' | 'Outdoor' | undefined,
-        sort_by: 'date' as 'date' | 'duration' | 'distance' | 'calories',
+        sort_by: 'startDate' as 'startDate' | 'endDate' | 'duration' | 'type' | 'sourceName',
         sort_order: 'desc' as 'asc' | 'desc'
     });
     
@@ -25,8 +24,7 @@ export default function Workouts() {
     const handleFilterChange = (key: string, value: string) => {
         setFilters(prev => ({
             ...prev,
-            [key]: key === 'location' ? (value === '' ? undefined : value as 'Indoor' | 'Outdoor') :
-                   key === 'sort_by' ? value as 'date' | 'duration' | 'distance' | 'calories' :
+            [key]: key === 'sort_by' ? value as 'startDate' | 'endDate' | 'duration' | 'type' | 'sourceName' :
                    key === 'sort_order' ? value as 'asc' | 'desc' :
                    key === 'limit' ? parseInt(value) || 20 :
                    value
@@ -118,19 +116,6 @@ export default function Workouts() {
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium">Location</label>
-                            <Select value={filters.location || 'all'} onValueChange={(value) => handleFilterChange('location', value === 'all' ? '' : value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All locations" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All locations</SelectItem>
-                                    <SelectItem value="Indoor">Indoor</SelectItem>
-                                    <SelectItem value="Outdoor">Outdoor</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div>
                             <label className="text-sm font-medium">Limit</label>
                             <Input
                                 type="number"
@@ -147,10 +132,11 @@ export default function Workouts() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="date">Date</SelectItem>
+                                    <SelectItem value="startDate">Start Date</SelectItem>
+                                    <SelectItem value="endDate">End Date</SelectItem>
                                     <SelectItem value="duration">Duration</SelectItem>
-                                    <SelectItem value="distance">Distance</SelectItem>
-                                    <SelectItem value="calories">Calories</SelectItem>
+                                    <SelectItem value="type">Type</SelectItem>
+                                    <SelectItem value="sourceName">Source</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -190,13 +176,21 @@ export default function Workouts() {
                             </div>
                             <div className="text-center">
                                 <p className="text-3xl font-bold text-orange-600">
-                                    {Math.round(workoutData.reduce((sum, w) => sum + w.duration, 0) / 60)}
+                                    {workoutData.length > 0 
+                                        ? Math.round(workoutData.reduce((sum, w) => {
+                                            // Convert duration to minutes (assuming duration is in seconds by default)
+                                            const durationInSeconds = w.durationUnit === 'min' ? w.duration * 60 : 
+                                                                    w.durationUnit === 'hr' ? w.duration * 3600 : 
+                                                                    w.duration;
+                                            return sum + durationInSeconds;
+                                          }, 0) / 60)
+                                        : 0}
                                 </p>
                                 <p className="text-sm text-muted-foreground">Total Minutes</p>
                             </div>
                             <div className="text-center">
                                 <p className="text-3xl font-bold text-green-600">
-                                    {Math.round(workoutData.reduce((sum, w) => sum + (w.active_energy_burned.value * 0.239), 0))}
+                                    {Math.round(workoutData.reduce((sum, w) => sum + (w.summary.total_calories || 0), 0))}
                                 </p>
                                 <p className="text-sm text-muted-foreground">Total Calories</p>
                             </div>
@@ -235,28 +229,38 @@ export default function Workouts() {
                         </div>
                     ) : workoutData.length > 0 ? (
                         <div className="space-y-2">
-                            {workoutData.map((workout) => (
-                                <div key={workout.id} className="flex justify-between items-center p-3 border rounded hover:bg-muted/50">
-                                    <div>
-                                        <p className="font-medium">{workout.name}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {new Date(workout.start).toLocaleString()}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {workout.location} • {workout.distance.value.toFixed(2)} {workout.distance.unit}
-                                        </p>
+                            {workoutData.map((workout) => {
+                                // Convert duration to minutes for display
+                                const durationInSeconds = workout.durationUnit === 'min' ? workout.duration * 60 : 
+                                                         workout.durationUnit === 'hr' ? workout.duration * 3600 : 
+                                                         workout.duration;
+                                const durationInMinutes = Math.round(durationInSeconds / 60);
+                                
+                                return (
+                                    <div key={workout.id} className="flex justify-between items-center p-3 border rounded hover:bg-muted/50">
+                                        <div>
+                                            <p className="font-medium">{workout.type || 'Unknown Workout'}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {new Date(workout.startDate).toLocaleString()}
+                                            </p>
+                                            {workout.sourceName && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    Source: {workout.sourceName}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm font-medium">{durationInMinutes} min</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {Math.round(workout.summary.total_calories || 0)} cal
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                HR: {Math.round(workout.summary.avg_heart_rate || 0)} bpm
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-sm font-medium">{Math.round(workout.duration / 60)} min</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {Math.round(workout.active_energy_burned.value * 0.239)} cal
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            HR: {Math.round(workout.summary.avg_heart_rate)} bpm
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="text-center py-8">
