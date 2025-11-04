@@ -113,7 +113,7 @@ export default function ImportData() {
                                 <p className="text-sm font-medium">API Endpoint:</p>
                                 <div className="flex items-center gap-2">
                                     <code className="flex-1 p-2 bg-muted rounded text-sm font-mono">
-                                        {appConfig.api.baseUrl}/import-data
+                                        {appConfig.api.baseUrl}/import/apple/healthion
                                     </code>
                                     <Button
                                         variant="outline"
