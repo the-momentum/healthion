@@ -98,4 +98,3 @@ The world of wearables and AI is evolving at breakneck speed. New devices hit th
 Need help? Looking for guidance on use cases or implementation? Don't hesitate to ask your question in our [GitHub discussion forum](https://github.com/the-momentum/healthion/discussions)! You'll also find interesting use cases, tips, and community insights there.
 
 
-
