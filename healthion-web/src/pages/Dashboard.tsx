@@ -11,7 +11,7 @@ export default function Dashboard() {
     const { data: heartRateData, summary: heartRateSummary, meta: heartRateMeta, loading: heartRateLoading } = useHeartRate({ limit: 5 });
     const { data: workoutData, meta: workoutMeta, loading: workoutLoading } = useWorkouts({ 
         limit: 10,
-        sort_by: 'date',
+        sort_by: 'startDate',
         sort_order: 'desc'
     });
 
@@ -148,22 +148,30 @@ export default function Dashboard() {
                             </div>
                         ) : workoutData.length > 0 ? (
                             <div className="space-y-2">
-                                {workoutData.slice(0, 3).map((workout) => (
-                                    <div key={workout.id} className="flex justify-between items-center">
-                                        <div>
-                                            <p className="font-medium">{workout.name}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {new Date(workout.start).toLocaleString()}
-                                            </p>
+                                {workoutData.slice(0, 3).map((workout) => {
+                                    // Convert duration to minutes for display
+                                    const durationInSeconds = workout.durationUnit === 'min' ? workout.duration * 60 : 
+                                                             workout.durationUnit === 'hr' ? workout.duration * 3600 : 
+                                                             workout.duration;
+                                    const durationInMinutes = Math.round(durationInSeconds / 60);
+                                    
+                                    return (
+                                        <div key={workout.id} className="flex justify-between items-center">
+                                            <div>
+                                                <p className="font-medium">{workout.type || 'Unknown Workout'}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {new Date(workout.startDate).toLocaleString()}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-medium">{durationInMinutes} min</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {Math.round(workout.summary.total_calories || 0)} cal
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-medium">{Math.round(workout.duration / 60)} min</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {Math.round(workout.active_energy_burned.value * 0.239)} cal
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 {workoutData.length > 3 && (
                                     <p className="text-xs text-muted-foreground text-center pt-2">
                                         +{workoutData.length - 3} more workouts
